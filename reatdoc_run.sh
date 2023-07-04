@@ -20,7 +20,7 @@ echo -e "Convert json to CSV"
 mkdir $output_path/convert_to_csv
 
 python $scripts_path/convert_json_to_csv.py *json --save_merge_df --out_dir $output_path/convert_to_csv
-python $scripts_path/rdt_prepare_csv_for_figures.py merged_csv_rdt.csv --out_dir $output_path/convert_to_csv
+python $scripts_path/rdt_prepare_csv_for_figures.py merged_csv_long.csv --out_dir $output_path/convert_to_csv
 
 echo -e "Generate figures"
 mkdir -p $output_path/averages_figures $output_path/profile_figures $output_path/heatmap
