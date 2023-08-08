@@ -149,15 +149,16 @@ def main():
         if args.split_visu:
 
             # To display the two conditions in two separate graphs
-            kws = {"s": 70, "facecolor": "none", "linewidth": 1.5}
+            kws = {"s": 70, "facecolor": "none", "linewidth": 0}
             p = sns.relplot(data = curr_df, x ='Bundles',y ='Value',
-                            hue = 'Bundles', ci = None,
+                            hue = 'Bundles',
                             col = 'Correction', col_order=['original','corrected'],
                             legend = True,height = 6, aspect = 1.4,
                             facet_kws={'sharey': True,'sharex': True},
                             palette=col_map, markers=["v", "o"],
                             style="Correction", **kws, )
-            p.set_titles('{col_name}')
+            # p.set_titles('{col_name}')
+            p.set_titles("")
             p.set_xticklabels(rotation=40)
             p.set(ylabel=metric)
             # remove Legend title

@@ -59,6 +59,11 @@ def main():
 
     df = df[df['Statistics'] == args.specific_stats]
 
+    df = df[~(df['Bundles'] == 'CR')]
+
+    df = df[~(df['Measures'] == 'MTsat')]
+    df = df[~(df['Measures'] == 'ihMTsat')]
+
     df = df.reset_index(drop=True)
 
 
@@ -82,11 +87,10 @@ def main():
                             "legend.borderaxespad":3,"legend.columnspacing":3,
                             "figure.dpi":200, "legend.title_fontsize":0,
                             'grid.linewidth': 0})
-                            
-        #style='correction', ajouter pour effect correction
-        p = sns.relplot(data = tmp, x ='Section',y ='Value',hue = 'Measures',
-                    ci = None, linewidth = 3, col = 'Method', kind ='line',
-                    legend = False, facet_kws={'sharey': False,'sharex': True},
+
+        p = sns.relplot(data = tmp, x ='Section', y ='Value', hue = 'Measures',
+                    linewidth = 3, style='Correction', kind ='line',
+                    legend = True, facet_kws={'sharey': False,'sharex': True},
                     height = 7, aspect = 1.4, palette=col_map)
 
         plt.savefig(os.path.join(args.out_dir, args.out_prefix + bundle + '.png'),
