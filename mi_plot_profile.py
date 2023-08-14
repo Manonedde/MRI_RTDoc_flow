@@ -63,6 +63,7 @@ def main():
 
     df = df[~(df['Measures'] == 'MTsat')]
     df = df[~(df['Measures'] == 'ihMTsat')]
+    df = df[~(df['Measures'] == 'ihMTR')]
 
     df = df.reset_index(drop=True)
 
@@ -88,13 +89,13 @@ def main():
                             "figure.dpi":200, "legend.title_fontsize":0,
                             'grid.linewidth': 0})
 
-        p = sns.relplot(data = tmp, x ='Section', y ='Value', hue = 'Measures',
+        p = sns.relplot(data = tmp, y ='Section', x ='Value', hue = 'Measures',
                     linewidth = 3, style='Correction', kind ='line',
                     legend = True, facet_kws={'sharey': False,'sharex': True},
-                    height = 7, aspect = 1.4, palette=col_map)
+                    height = 7, aspect = 0.5, palette=col_map, orient="y")
 
         plt.savefig(os.path.join(args.out_dir, args.out_prefix + bundle + '.png'),
-                    dpi=200, bbox_inches='tight')
+                    dpi=300, bbox_inches='tight')
 
 
 

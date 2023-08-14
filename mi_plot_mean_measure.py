@@ -121,18 +121,23 @@ def main():
         df=df.groupby(['Sid','Bundles','Statistics','Measures','Correction'])['Value'].mean().reset_index()
 
     df = df[~(df['Bundles'] == 'CR')]
+    df = df[~(df['Bundles'] == 'CC_1')]
+    df = df[~(df['Bundles'] == 'ICP')]
     df = df.reset_index(drop=True)
+
+    # print(df[df['Bundles'] == 'AF_L'][df['Correction'] == "corrected"][df['Statistics'] == "mean"][df['Value'] > 3])
+    print(df.loc[(df['Value'] > 3) & (df['Measures'] == "ihMTsat")])
 
     # Set seaborn display settings
     sns.set_style("whitegrid")
     sns.set_context("paper",
-                    rc={"font.size":15,"axes.titlesize":15,
+                    rc={"font.size":15,"axes.titlesize":20,
                         "axes.linewidth":0.5,"axes.edgecolor":'k',
-                        "axes.labelsize":15, "xtick.labelsize":14,
-                        "ytick.labelsize":15, "axes.labelpad":6,
+                        "axes.labelsize":20, "xtick.labelsize":18,
+                        "ytick.labelsize":20, "axes.labelpad":6,
                         "axes.titlepad":3,"legend.fontsize":10,
                         "legend.borderaxespad":3,"legend.columnspacing":3,
-                        "figure.dpi":200, "legend.title_fontsize":12,
+                        "figure.dpi":300, "legend.title_fontsize":12,
                         'legend.frameon': False, 'grid.linewidth': 0})
 
     # Loop to generate the graphs of each MRI measurement
@@ -153,13 +158,13 @@ def main():
             p = sns.relplot(data = curr_df, x ='Bundles',y ='Value',
                             hue = 'Bundles',
                             col = 'Correction', col_order=['original','corrected'],
-                            legend = True,height = 6, aspect = 1.4,
+                            legend = False, height = 6, aspect = 1.4,
                             facet_kws={'sharey': True,'sharex': True},
-                            palette=col_map, markers=["v", "o"],
+                            palette=col_map, markers=["s", "o"],
                             style="Correction", **kws, )
             # p.set_titles('{col_name}')
             p.set_titles("")
-            p.set_xticklabels(rotation=40)
+            p.set_xticklabels(rotation=60)
             p.set(ylabel=metric)
             # remove Legend title
             #p._legend.texts[0].set_text("")
@@ -195,7 +200,7 @@ def main():
             ax2 = ax.twinx()
             kws = {"s": 55, "facecolor": "none", "linewidth": 0}
             g2=sns.scatterplot(ax=ax, data=curr_df_corrected, x='x_psotion',
-                               y='Value', hue='Bundles', marker="v",
+                               y='Value', hue='Bundles', marker="s",
                                edgecolor="none", palette=col_map,
                                legend=None, **kws, )
             ax2.spines['right'].set_visible(False)
@@ -219,7 +224,7 @@ def main():
 
         # Save plot
         plt.savefig(os.path.join(args.out_dir, args.out_prefix + metric + '.png'),
-                    dpi=200, bbox_inches='tight')
+                    dpi=300, bbox_inches='tight')
 
 
 
