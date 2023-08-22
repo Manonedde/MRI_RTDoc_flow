@@ -81,23 +81,30 @@ def main():
 
         sns.set_style("whitegrid")
         sns.set_context("paper",
-                        rc={"font.size":17,"axes.titlesize":15,
+                        rc={"font.size":25,"axes.titlesize":25,
                             "axes.linewidth":0.5,"axes.edgecolor":'k',
-                            "axes.labelsize":20, "xtick.labelsize":17,
-                            "ytick.labelsize":19, "axes.labelpad":6,
-                            "axes.titlepad":3,"legend.fontsize":20,
+                            "axes.labelsize":25, "xtick.labelsize":25,
+                            "ytick.labelsize":25, "axes.labelpad":6,
+                            "axes.titlepad":3,"legend.fontsize":25,
                             "legend.borderaxespad":3,"legend.columnspacing":3,
                             "figure.dpi":300, "legend.title_fontsize":0, "legend.title":None,
                             'grid.linewidth': 0})
 
-        p = sns.relplot(data = tmp, y ='Section', x ='Value', hue = 'Measures', col='Measures',
-                    linewidth = 3, style='Correction', kind ='line', col_order=['MTR','ihMTR'],
-                    legend = False, facet_kws={'sharey': True,'sharex': False},
-                    height = 10, aspect = 0.5, palette=col_map, orient="y")
+        # p = sns.relplot(data = tmp, y ='Section', x ='Value', hue = 'Measures', col='Measures',
+        #             linewidth = 3, style='Correction', kind ='line', col_order=['MTR','ihMTR'],
+        #             legend = False, facet_kws={'sharey': True,'sharex': False},
+        #             height = 10, aspect = 0.4, palette=col_map, orient="y")
+        # p.set(yticks=np.linspace(1,10,10))
+        # p.axes[0,0].set_xlabel('MTR')
+        # p.axes[0,1].set_xlabel('ihMTR')
+        p = sns.relplot(data = tmp, x ='Section', y ='Value', hue = 'Measures', row='Measures',
+                    linewidth = 3, style='Correction', kind ='line', row_order=['MTR','ihMTR'],
+                    legend = False, facet_kws={'sharey': False,'sharex': True},
+                    height = 5, aspect = 1.8, palette=col_map, orient="x")
+        p.set(xticks=np.linspace(1,10,10))
+        p.axes[0,0].set_ylabel('MTR')
+        p.axes[1,0].set_ylabel('ihMTR')
         p.set_titles("")
-        p.axes[0,0].set_xlabel('MTR')
-        p.axes[0,1].set_xlabel('ihMTR')
-        p.set(yticks=np.linspace(1,10,10))
 
         plt.savefig(os.path.join(args.out_dir, args.out_prefix + bundle + '.png'),
                     dpi=300, bbox_inches='tight')
