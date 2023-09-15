@@ -153,6 +153,12 @@ def main():
 
         if args.split_visu:
 
+            # mean = np.mean(curr_df['Value'])
+            curr_df_original = curr_df[curr_df['Correction'] == 'original']
+            curr_df_corrected = curr_df[curr_df['Correction'] == 'corrected']
+            mean_ori = curr_df_original['Value'].mean()
+            mean_cor = curr_df_corrected['Value'].mean()
+
             # To display the two conditions in two separate graphs
             kws = {"s": 70, "facecolor": "none", "linewidth": 0}
             p = sns.relplot(data = curr_df, x ='Bundles',y ='Value',
@@ -162,10 +168,14 @@ def main():
                             facet_kws={'sharey': True,'sharex': True},
                             palette=col_map, markers=["s", "o"],
                             style="Correction", **kws, )
+            p.axes[0,0].axhline(y=mean_ori, color='grey', linestyle='--', alpha=0.5)
+            p.axes[0,1].axhline(y=mean_cor, color='grey', linestyle='--', alpha=0.5)
             # p.set_titles('{col_name}')
-            p.set_titles("")
+            # p.set_titles("")
             p.set_xticklabels(rotation=60)
             p.set(ylabel=metric)
+            p.axes[0,0].set_title('Original')
+            p.axes[0,1].set_title('Corrected')
             # remove Legend title
             #p._legend.texts[0].set_text("")
 
