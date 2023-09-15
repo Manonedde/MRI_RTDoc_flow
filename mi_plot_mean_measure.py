@@ -174,8 +174,11 @@ def main():
             # p.set_titles("")
             p.set_xticklabels(rotation=60)
             p.set(ylabel=metric)
-            p.axes[0,0].set_title('Original')
-            p.axes[0,1].set_title('Corrected')
+            if metric == 'MTR' or metric == 'MTsat':
+                p.axes[0,0].set_title('Original')
+                p.axes[0,1].set_title('Corrected')
+            else:
+                p.set_titles("")
             # remove Legend title
             #p._legend.texts[0].set_text("")
 
