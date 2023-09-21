@@ -26,7 +26,10 @@ import json
 import os
 
 import pandas as pd
+import numpy as np
 
+from dataframe.utils import column_dict_name
+from dataframe.func import split_col, reshape_to_wide_format, convert_lesion_data
 from scilpy.io.utils import (add_overwrite_arg,
                              assert_inputs_exist, assert_outputs_exist)
 
@@ -45,6 +48,9 @@ def _build_arg_parser():
     p.add_argument('--wide', action = 'store_true',
                    help = 'Option to save in wide format the statistic '
                           'measurements. By default is long format.')
+    p.add_argument('--longitudinal', action = 'store_true',
+                   help = 'Option to save in wide format the statistic '
+                          'measurements. By default is long format.')
     p.add_argument('--save_merge_df', action = 'store_true',
                    help = 'Save all jsons into a single dataframe in long \n'
                           'format. By default, each json is saved in an '
@@ -53,23 +59,6 @@ def _build_arg_parser():
     add_overwrite_arg(p)
 
     return p
-
-# Split index into multiple columns
-def split_col(x):
-    cols, value = x
-    parse_col_value = *cols.split("."), value
-    return parse_col_value
-
-# Reshpae long type CSV to wide format
-def reshape_to_wide_format(long_format_df, selected_cols):
-    col_name = copy.deepcopy(selected_cols)
-    wide_format = long_format_df.pivot(index = selected_cols,
-                                       columns = "stats")
-    wide_format = wide_format.reset_index(drop = True)
-    measure_names = wide_format['value'].columns.tolist()
-    wide_format.columns = wide_format.columns.droplevel()
-    wide_format.columns = col_name + measure_names
-    return wide_format
 
 
 def main():
@@ -84,60 +73,59 @@ def main():
     # Load, reshape and save multi json data
     tmp_df = []
     for curr_json in args.in_json:
+        print(curr_json)
+        if 'stats' in curr_json:
+            print("The lesion_stats and lesion_streamlines_stats jsons\n"
+                  "cannot be processed with this script. \n"
+                  "Remove these jsons from the input.\n")
 
+        key_columns = os.path.splitext(os.path.basename(curr_json))[0]
         if args.out_csv is None:
-            args.out_csv = os.path.splitext(os.path.basename(curr_json))[0]
+            args.out_csv = key_columns
 
         # Load json data
         df = pd.json_normalize(json.load(open(curr_json))).T
         df = df.reset_index(drop=False)
 
-        # Split index into multiple columns
-        values = [split_col(x) for x in df[["index", 0]].values]
-        nb_var = (len(values[0])-1)
+        if 'lesion' in curr_json:
+            long_columns_list = column_dict_name[key_columns][0]
+            long_columns_nolist = column_dict_name[key_columns + '_nolist'][0]
 
-        # Define the column names based on number of columns
-        # This assumes that columns always have the same organization
-        # Perhaps we need to find another way of doing this
-        if nb_var > 4 and ('001' in values[0]) is True:
-            tmp_columns = ["sid","roi","metrics", "section",
-                           "stats","value"]
-            base_columns = ["sid", "roi","metrics","section"]
-        elif nb_var == 4 and ('001' in values[0]) is True:
-            tmp_columns = ["sid","roi","stats", "section","value"]
-            base_columns = ["sid","roi","section"]
-        elif nb_var == 4:
-            tmp_columns = ["sid", "roi", "metrics", "stats", "value"]
-            base_columns = tmp_columns[0:3]
+            long_df = convert_lesion_data(df, long_columns_list,
+                                          long_columns_nolist)
+
         else:
-            tmp_columns = ["sid", "roi", "stats", "value"]
-            base_columns = tmp_columns[0:2]
+            # Define the column names based on number of columns
+            # This assumes that columns always have the same organization
+            long_columns, wide_columns = column_dict_name[key_columns]
+            # Store json data in dataframe
+            values = [split_col(x) for x in df[["index", 0]].values]
+            long_df = pd.DataFrame(columns = long_columns, data = values)
 
-        # Store json data in dataframe
-        long_df = pd.DataFrame(columns = tmp_columns, data = values)
         if args.save_merge_df:
-            if len(long_df.columns.tolist()) < 5:
-                long_df.insert(2,'metrics',values[0][2])
-                if ('001' in values[0]) is True:
-                    long_df.insert(3,'section','averaged')
             tmp_df.append(long_df)
+
         else:
             long_df.to_csv(os.path.join(args.out_dir,
-                                        args.out_csv + '_long.csv'))
-
+                                        args.out_csv + '_long.csv',
+                                        index=False))
+            long_df.to_csv(os.path.join(args.out_dir,
+                            args.out_csv + '_wide.csv'),
+                            index=False)
         # Reshape long to wide dataframe
         if args.wide:
-            wide_df = reshape_to_wide_format(long_df, base_columns)
-            # Save dataframe
-            wide_df.to_csv(os.path.join(args.out_dir,
-                                        args.out_csv + '_wide.csv'))
+            if 'sats' in long_df.column.tolist():
+                long_df = reshape_to_wide_format(long_df, wide_columns)
+                # Save dataframe
+            long_df.to_csv(os.path.join(args.out_dir,
+                                        args.out_csv + '_wide.csv'),
+                                        index=False)
 
     if args.save_merge_df:
         merged_long_df = pd.concat(tmp_df[:], ignore_index=True)
         merged_long_df = merged_long_df.reset_index(drop=True)
         merged_long_df.to_csv(os.path.join(args.out_dir,
-                                           'merged_csv_long.csv'))
+                                           'merged_csv_long.csv'), index=False)
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

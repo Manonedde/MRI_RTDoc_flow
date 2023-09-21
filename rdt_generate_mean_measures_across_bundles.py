@@ -14,13 +14,14 @@ import argparse
 import os
 import pandas as pd
 
-from plotly.subplots import make_subplots
 import plotly.graph_objs as go
 import plotly.express as px
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
-from utils import (average_parameters_dict, order_plot_dict,
-                   bundle_dict_color_v1, bundle_dict_color_v10)
+
+from plot_utils import (average_parameters_dict, order_plot_dict,
+                        bundle_dict_color_v1, bundle_dict_color_v10)
+from plotly_func import interactive_scatter
 
 
 def _build_arg_parser():
@@ -37,7 +38,7 @@ def _build_arg_parser():
     p.add_argument('--rbx_version', default='v1', choices={'v1', 'v10'},
                    help='Rbx flow version to segment bundles.'
                         '[%(default)s]')
-    p.add_argument('--specific_stats',  default='mean',
+    p.add_argument('--specific_stats', default='mean',
                    help='Use to select a specific statistic. '
                         '[%(default)s]')
     p.add_argument('--specific_method',
@@ -49,24 +50,24 @@ def _build_arg_parser():
                          default=(1100, 800),
                          help='Width and Height of Scatter Plot. ')
     scatter.add_argument('--custom_order',
-                   help='Use dictionary provided to set order of metrics plot.')
+                         help='Use dictionary provided to set order of metrics plot.')
     scatter.add_argument('--custom_yaxis',
-                   help='Use dictionary provided to set x and y axis range by measures.')
+                         help='Use dictionary provided to set x and y axis range by measures.')
     scatter.add_argument('--use_data',
-                   help='Use data to set x and y axis range.')
+                         help='Use data to set x and y axis range.')
     scatter.add_argument('--custom_colors',
-                   help='Dictionary containing the bundle names and colors '
-                        'associated in HEX format.')
+                         help='Dictionary containing the bundle names and colors '
+                              'associated in HEX format.')
     scatter.add_argument('--apply_factor', action='store_true',
-                   help='Use if you apply factor on some metrics. ')
+                         help='Use if you apply factor on some metrics. ')
     scatter.add_argument('--print_yaxis_range', action='store_true',
-                   help='Use to check/update the y axis range. ')
+                         help='Use to check/update the y axis range. ')
 
     scatter.add_argument('--save_as', default='html', choices={'html', 'png'},
-                       help='Save plot as png. Require kaleido. [%(default)s]')
+                         help='Save plot as png. Require kaleido. [%(default)s]')
     scatter.add_argument('--dpi_scale', type=int, default=6,
-                       help='Use to increase (>1) or decrease (<1) the '
-                            ' image resolution. [%(default)s]')
+                         help='Use to increase (>1) or decrease (<1) the '
+                              ' image resolution. [%(default)s]')
     add_overwrite_arg(p)
 
     return p
@@ -82,11 +83,11 @@ def main():
         args.out_dir = './'
 
     df = pd.read_csv(args.in_csv)
-    df.drop('Unnamed: 0', axis =1, inplace=True)
+    df.drop('Unnamed: 0', axis=1, inplace=True)
 
     df = df[df['Statistics'] == args.specific_stats]
 
-    if args.specific_method is not None :
+    if args.specific_method is not None:
         df = df[df['Method'] == args.specific_method]
 
     df = df.reset_index(drop=True)
@@ -99,7 +100,7 @@ def main():
     if 'Method' not in df.columns.tolist():
         print("The csv not contains Method column. \nRename column or add it. ")
 
-    if (len(df['Method'].unique().tolist()) > 1 and args.specific_method is None):
+    if len(df['Method'].unique().tolist()) > 1 and args.specific_method is None:
         parser.error('Multiple method categories are found in csv files.\n '
                      'Please provide a csv file containing single Method or '
                      'use --specific_method options.')
@@ -135,7 +136,7 @@ def main():
     if args.out_name is None:
         args.out_name = curr_method + '_measurement_distribution'
 
-    if args.custom_order and args.custom_yaxis is not None :
+    if args.custom_order and args.custom_yaxis is not None:
         custom_order = args.custom_order
         custom_yaxis = args.custom_yaxis
     elif args.use_data is not None:
@@ -145,27 +146,16 @@ def main():
         custom_yaxis = average_parameters_dict
 
     if args.apply_factor:
-        custom_yaxis[1][1]=custom_yaxis[1][1]*10
+        custom_yaxis[1][1] = custom_yaxis[1][1] * 10
 
-    col_wrap = len(df['Measures'].unique().tolist())/2
+    col_wrap = len(df['Measures'].unique().tolist()) / 2
 
-    fig=px.scatter(df, x = "Bundles", y = "Value", color = "Bundles",
-                   facet_col = "Measures", facet_col_wrap = int(col_wrap),
-                   facet_col_spacing = 0.09, facet_row_spacing=0.09,
-                   height = args.plot_size[1], width = args.plot_size[0],
-                   title = curr_title, color_discrete_map = bundle_colors,
-                   category_orders={"Measures":custom_order})
-
-    fig.for_each_annotation(lambda anot: anot.update(text=anot.text.split("=")[-1]))
-    fig.update_layout(title_x = 0.5, showlegend = False,
-                      font = {'size': 15}, title_font = dict(size = 25),
-                      plot_bgcolor = "white")
-    fig.update_yaxes(matches = None, title = '', showticklabels = True,
-                     visible = True)
-    fig.update_xaxes(title = '', showline = True, linewidth = 1,
-                     linecolor = 'black')
-    fig.update_yaxes(title = '',showline = True, linewidth = 1,
-                     linecolor = 'black', gridcolor = 'lightgrey')
+    fig = interactive_scatter(df, "Bundles", "Value", "Bundles",
+                              colormap=bundle_colors, f_column="Measures",
+                              column_wrap=int(col_wrap), title_size=25,
+                              custom_order={"Measures": custom_order},
+                              figtitle=curr_title, fig_width=args.plot_size[0],
+                              fig_height=args.plot_size[1])
 
     if args.use_data is None:
         y_axis_name = []
@@ -184,8 +174,8 @@ def main():
 
     if args.save_as == 'png':
         fig.write_image(os.path.join(args.out_dir, args.out_name + '.png'),
-                        scale=args.dpi_scale, height = args.plot_size[1],
-                        width = args.plot_size[0])
+                        scale=args.dpi_scale, height=args.plot_size[1],
+                        width=args.plot_size[0])
     else:
         fig.write_html(os.path.join(args.out_dir, args.out_name + '.html'))
 
