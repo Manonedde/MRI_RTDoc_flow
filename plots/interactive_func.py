@@ -206,3 +206,107 @@ def interactive_correlation(df, x_column, y_column, color_column, trend_line='ol
                      linecolor='black')
 
     return fig
+
+
+
+def interactive_evolution_lineplot(df, colums_as_labels, x_col, y_col,
+                                   colors_labels='', xy_label='',
+                                   title='',marker_size=[12, 8, 8, 8],
+                                   line_size = [4, 2, 2, 2],
+                                   fig_width=700, fig_height=500,):
+    """
+    Generate an interactive individual line according to Category in
+    colums_as_labels. Colors labels, marker and line size must be set in order
+    of colums_as_labels. Most of the time colums_as_labels is Lesion_group with:
+    HC, NAWM, Penumbra and Lesion. Marker and Line size first value represents
+    HC data that's why, values are different from others. Use options to
+    modify it.
+
+    df :                Dataframe containing columns for x and y
+    x/y_col :           Columns names corresponding to x and y
+    colums_as_labels:   Colums used as label to plot individual line
+    colors_labels :     List of color corresponding to each category
+    facetcol:           Use to split lineplot with criterion (Group for instance)
+    x/y_label :         X and Y label for the axis
+    title :             Set the title of the figure
+    fig_width :         Set the width of figure
+    fig_height :        Set the height of figure
+
+    Return figure structure that could be save using write_html function.
+    """
+
+    labels = df[colums_as_labels].unique().tolist()
+    if not colors_labels:
+        colors_labels = ['rgb(49,130,189)','rgb(67,67,67)',
+                         'rgb(115,115,115)', 'rgb(189,189,189)']
+
+    if not xy_label:
+        xy_label = x_col, y_col
+
+    fig = go.Figure()
+    annotations = []
+
+    for idx, label in enumerate(labels):
+        tmp = df.loc[df[colums_as_labels] == label]
+
+        fig.add_trace(go.Scatter(x=tmp[x_col].values, y=tmp[y_col].values,
+                                 mode='lines',name=label,
+                                 line=dict(color=colors_labels[idx],
+                                 width=line_size[idx]),
+                                 connectgaps=True,))
+
+        # Add first and ending data point
+        fig.add_trace(go.Scatter(x=[tmp[x_col].values[0], tmp[x_col].values[-1]],
+                                 y=[tmp[y_col].values[0], tmp[y_col].values[-1]],
+                                mode='markers',
+                                marker=dict(color=colors_labels[idx],
+                                size=marker_size[idx])))
+
+        # Add annotations at first and ending point
+        annotations.append(dict(xref='paper', x=0.05, y=tmp[y_col].values[0],
+                                xanchor='right', yanchor='middle',
+                                text=labels[idx] + ' {}'.format(
+                                                round(tmp[y_col].values[0],2)),
+                                font=dict(family='Arial',size=16),
+                                showarrow=False))
+
+        annotations.append(dict(xref='paper', x=0.95, y=tmp[y_col].values[-1],
+                               xanchor='left',yanchor='middle',
+                               text='{}'.format(round(tmp[y_col].values[-1],2)),
+                               font=dict(family='Arial',size=16),
+                               showarrow=False))
+
+    # Title
+    annotations.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
+                            xanchor='left', yanchor='bottom',
+                            text=title, showarrow=False,
+                            font=dict(family='Arial', size=30,
+                                      color='rgb(37,37,37)')))
+    # X label
+    annotations.append(dict(xref='paper', yref='paper', x=0.5, y=-0.1,
+                            xanchor='center', yanchor='top',
+                            text=xy_label[0], showarrow=False,
+                            font=dict(family='Arial', size=17,
+                                      color='rgb(150,150,150)'),))
+    # Y label
+    annotations.append(dict(xref='paper', yref='paper', x=0, y=1,
+                            xanchor='left', yanchor='middle',
+                            text=xy_label[1], showarrow=False,
+                            font=dict(family='Arial', size=17,
+                                      color='rgb(150,150,150)'),))
+
+    fig.update_layout(annotations=annotations)
+
+    fig.update_layout(width=fig_width, height=fig_height,
+                      xaxis=dict(showline=True, showgrid=False,
+                                 showticklabels=True, linewidth=2,
+                                 linecolor='rgb(204, 204, 204)', ticks='outside',
+                                 tickfont=dict(family='Arial', size=12,
+                                               color='rgb(82, 82, 82)',),),
+                      yaxis=dict(showgrid=False, zeroline=False, showline=False,
+                                 showticklabels=False,), autosize=False,
+                                 margin=dict(autoexpand=False,
+                                             l=100, r=20, t=110,),
+                      showlegend=False, plot_bgcolor='white')
+
+    return fig
