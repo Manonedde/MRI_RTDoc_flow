@@ -227,7 +227,7 @@ def interactive_evolution_lineplot(df, colums_as_labels, x_col, y_col,
     colums_as_labels:   Colums used as label to plot individual line
     colors_labels :     List of color corresponding to each category
     facetcol:           Use to split lineplot with criterion (Group for instance)
-    x/y_label :         X and Y label for the axis
+    xy_label :          X and Y label for the axis
     title :             Set the title of the figure
     fig_width :         Set the width of figure
     fig_height :        Set the height of figure
