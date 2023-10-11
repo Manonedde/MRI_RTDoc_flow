@@ -27,7 +27,7 @@ def bar_charts3d(
         x_title='',y_title='', z_title='', title='',
         opacity_val=0.9, nan_value=False,figure_size=(15,9),
         xy_elevation=15, z_rotation=250, camera_dist=15,
-        add_legend_box=False, colors_name='jet',):
+        add_legend_box=False, legen_labels='', colors_name='jet',):
     """
     Generate a barchart in 3D or a sparse barchart in 3D
     z_rotation : the rotation around the z axis,
@@ -96,18 +96,11 @@ def bar_charts3d(
     ax.bar3d(xpos,ypos,zpos, 1, 1, dz,   alpha=0.7, zsort='max',color=colors)
     ax.get_proj = lambda: np.dot(Axes3D.get_proj(ax), np.diag([1,0.4, 1, 1]))
 
-
     #max_height = np.max(z)   # get range of colorbars
     #min_height = np.min(z)
 
-    #cmaps = [cm.Blues, cm.Reds, cm.Greens]
-    #colors = np.hstack([c(values) for c in cmaps]).reshape(-1, 4)
-
-    #ax.set_box_aspect((10, 3, 1))
-
     ax.bar3d(x_mesh_position.ravel(), y_mesh_position.ravel(),
              z*0, dx=0.2, dy=0.2, dz=z, color=colors, alpha=0.9)
-    #ax.set_box_aspect((5, 20, 6))
     #dx and dy are are the width and depth of bars
 
     if add_legend_box:
@@ -116,7 +109,7 @@ def bar_charts3d(
         Segment3_proxy = plt.Rectangle((0, 0), 1, 1, fc="#3e9a19")
 
         ax.legend([Segment1_proxy, Segment2_proxy, Segment3_proxy],
-                  ['Segment1', 'Segment2', 'Segment3'])
+                  [legen_labels[0], legen_labels[1], legen_labels[2]])
 
     return fig
 
@@ -124,21 +117,22 @@ def bar_charts3d(
 
 ## from barchatd3d.py
 def interactive_barchart3d(labels, z_data, title, z_title,
-               n_row=0, width=900, height=900, thikness=0.7, colorscale='Viridis',
-               **kwargs):
+               n_row=0, width=900, height=900, thikness=0.7,
+               colorscale='Viridis', **kwargs):
     """
     Draws a 3D barchart
-    :param labels: Array_like of bar labels
-    :param z_data: Array_like of bar heights (data coords)
-    :param title: Chart title
-    :param z_title: Z-axis title
-    :param n_row: Number of x-rows
-    :param width: Chart width (px)
-    :param height: Chart height (px)
-    :param thikness: Bar thikness (0; 1)
-    :param colorscale: Barchart colorscale
-    :param **kwargs: Passed to Mesh3d()
-    :return: 3D barchart figure
+    labels      Array_like of bar labels
+    z_data      Array_like of bar heights (data coords)
+    title       Chart title
+    z_title     Z-axis title
+    n_row       Number of x-rows
+    width       Chart width (px)
+    height      Chart height (px)
+    thikness    Bar thikness (0; 1)
+    colorscale  Barchart colorscale
+    **kwargs    Passed to Mesh3d()
+
+    return 3D barchart figure
     """
 
     if n_row < 1:
@@ -164,12 +158,9 @@ def interactive_barchart3d(labels, z_data, title, z_title,
             **kwargs))
 
         ann.append(dict(
-            showarrow=False,
-            x=x_cnt, y=y_cnt, z=z_max,
-            text=f'<b>#{iz+1}</b>',
-            font=dict(color='white', size=11),
-            bgcolor='rgba(0, 0, 0, 0.3)',
-            xanchor='center', yanchor='middle',
+            showarrow=False, x=x_cnt, y=y_cnt, z=z_max,
+            text=f'<b>#{iz+1}</b>', font=dict(color='white', size=11),
+            bgcolor='rgba(0, 0, 0, 0.3)', xanchor='center', yanchor='middle',
             hovertext=f'{z_max} {labels[iz]}'))
 
     # mesh3d doesn't currently support showLegend param, so
@@ -238,7 +229,7 @@ def create_z_grid(len_x, len_y, z_df):
             z_temp_df.append(None)
     return z_temp_df
 
-
+    
 
 def figure_layout(fig: go.Figure, xaxis_legend: str, len_xaxis, yaxis_legend,
                   len_yaxis, x_min, x_title, y_title,  z_legend, z_title,
