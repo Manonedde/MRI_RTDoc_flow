@@ -16,7 +16,7 @@ import plotly.graph_objs as go
 import plotly.express as px
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
-from figures_for_reathedoc.utils import (average_parameters, metric_colors)
+from plots.utils import average_parameters, metric_colors
 
 
 def _build_arg_parser():
