@@ -19,9 +19,9 @@ import plotly.express as px
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 
-from plot_utils import (average_parameters_dict, order_plot_dict,
+from plots.utils import (average_parameters_dict, order_plot_dict,
                         bundle_dict_color_v1, bundle_dict_color_v10)
-from plotly_func import interactive_scatter
+from plots.interactive_func import interactive_scatter
 
 
 def _build_arg_parser():
@@ -141,6 +141,7 @@ def main():
         custom_yaxis = args.custom_yaxis
     elif args.use_data is not None:
         custom_order = df['Measures'].unique().tolist()
+        custom_yaxis =  False
     else:
         custom_order = order_plot_dict[curr_method]
         custom_yaxis = average_parameters_dict
@@ -155,22 +156,9 @@ def main():
                               column_wrap=int(col_wrap), title_size=25,
                               custom_order={"Measures": custom_order},
                               figtitle=curr_title, fig_width=args.plot_size[0],
-                              fig_height=args.plot_size[1])
-
-    if args.use_data is None:
-        y_axis_name = []
-        for axis in fig.layout:
-            if type(fig.layout[axis]) == go.layout.YAxis:
-                y_axis_name.append(axis)
-
-        for idx, yname in enumerate(y_axis_name):
-            curr_key = fig.layout.annotations[idx].text
-            fig.layout[yname].range = custom_yaxis[curr_key]
-
-    if args.print_yaxis_range:
-        for axis in fig.layout:
-            if type(fig.layout[axis]) == go.layout.YAxis:
-                print(axis, fig.layout[axis].range)
+                              fig_height=args.plot_size[1],
+                              print_yaxis_range=args.print_yaxis_range,
+                              custom_y_range=custom_yaxis)
 
     if args.save_as == 'png':
         fig.write_image(os.path.join(args.out_dir, args.out_name + '.png'),
