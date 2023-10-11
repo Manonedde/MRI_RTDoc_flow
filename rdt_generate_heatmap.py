@@ -24,7 +24,7 @@ import plotly.express as px
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from plot.utils import new_order_measure
-from plot.func import interactive_heatmap
+from plot.heatmap import interactive_heatmap
 
 
 def _build_arg_parser():
