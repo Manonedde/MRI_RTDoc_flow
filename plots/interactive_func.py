@@ -83,9 +83,9 @@ def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
 
 
 
-def interactive_lineplot(df, x_col, y_col, color_col=False, use_order=False,
-                         colormap=px.colors.qualitative.Set2, facetcol=False,
-                         xrange=False, yrange=False, frame=False,group=False,
+def interactive_lineplot(df, x_col, y_col, color_col=None, use_order=None,
+                         colormap=px.colors.qualitative.Set2, facetcol=None,
+                         xrange=None, yrange=None, frame=None,group=None,
                          y_label='', x_label='', title='',):
     """
     Generate an interactive lineplot.
@@ -93,13 +93,14 @@ def interactive_lineplot(df, x_col, y_col, color_col=False, use_order=False,
     df :                Dataframe containing columns for x and y
     x/y_col :           Columns names corresponding to x and y
     colormap :          Color scale used to plot heatmap
+    facetcol:           Use to split lineplot with criterion (Group for instance)
     x/y_label :         X and Y label for the axis
     frame :             Column name used for animation frame
     group :             Column name used for animation group
     x/yrange :          Min-Max for x or y axis
     title :             Set the title of the figure
-    fig_width :         Set the width of large figure (not individual heatmap)
-    fig_height :        Set the height of large figure (not individual heatmap)
+    fig_width :         Set the width of figure
+    fig_height :        Set the height of figure
 
     Return figure structure that could be save using write_html function.
     """
@@ -108,7 +109,7 @@ def interactive_lineplot(df, x_col, y_col, color_col=False, use_order=False,
                   color=color_col, range_x=xrange, range_y = yrange,
                   template="plotly_white", animation_group=group,
                   color_discrete_sequence=colormap,
-                  title=title)
+                  title=title, facet_col=facetcol)
 
     fig.update_yaxes(title_text=y_label, visible=True)
     fig.update_xaxes(title_text=x_label,visible=True)
@@ -117,10 +118,43 @@ def interactive_lineplot(df, x_col, y_col, color_col=False, use_order=False,
 
 
 
+def interactive_boxplot(df, x_col, y_col, color_col=None, use_order=None,
+                         colormap=px.colors.qualitative.Set2, facetcol=None,
+                         xrange=None, yrange=None, frame=None,group=None,
+                         y_label='', x_label='', title='',):
+    """
+    Generate an interactive boxplot.
+
+    df :                Dataframe containing columns for x and y
+    x/y_col :           Columns names corresponding to x and y
+    colormap :          Color scale used to plot heatmap
+    facetcol:           Use to split lineplot with criterion (Group for instance)
+    x/y_label :         X and Y label for the axis
+    frame :             Column name used for animation frame
+    group :             Column name used for animation group
+    x/yrange :          Min-Max for x or y axis
+    title :             Set the title of the figure
+    fig_width :         Set the width of figure
+    fig_height :        Set the height of figure
+
+    Return figure structure that could be save using write_html function.
+    """
+
+    fig = px.box(df, x=x_col, y=y_col, animation_frame=frame,
+                  color=color_col, range_x=xrange, range_y = yrange,
+                  template="plotly_white", animation_group=group,
+                  color_discrete_sequence=colormap,
+                  title=title, facet_col=facetcol)
+
+    fig.update_yaxes(title_text=y_label, visible=True)
+    fig.update_xaxes(title_text=x_label,visible=True)
+
+    return fig
+
 
 def interactive_correlation(df, x_column, y_column, color_column, trend_line='ols',
-                             colormap='Set2', f_column=False, f_row=False,
-                             column_wrap=False, row_wrap=False, bgcolor="white",
+                             colormap='Set2', f_column=None, f_row=None,
+                             column_wrap=None, row_wrap=None, bgcolor="white",
                              column_spacing=0.09, row_spacing=0.09, title_size=20,
                              show_legend=False, custom_order=False, font_size=15,
                              fig_width=700, fig_height=700,line_width=1,
