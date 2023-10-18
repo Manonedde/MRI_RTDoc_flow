@@ -11,12 +11,11 @@ import plotly.subplots
 from plotly.subplots import make_subplots
 
 
-
 def interactive_heatmap(corr_map, title='', colbar_title='',
                         colormap=px.colors.sequential.YlGnBu,
-                        y_label='', z_min=0.3, z_max=1,
+                        y_label='', x_label='', r_min=0.3, r_max=1,
                         tick_font_size=15, title_size=20, tick_angle=90,
-                        fig_width=800, fig_height=800,):
+                        fig_width=600, fig_height=600,):
     """
     Generate interactive heatmap.
 
@@ -24,7 +23,7 @@ def interactive_heatmap(corr_map, title='', colbar_title='',
     title:              Title of figure
     colormap :          Color scale used to plot heatmap
     colbar_title :      Title of colorbar
-    y_label :           Y label for the heatmap
+    x/y_label :         X/Y label for the heatmap
     r_min,r_max :       Minimun and maximum values used to set the colorbar
     tick_angle :        Set angle of X tick labels
     tick_font_size :    Set the tick font size
@@ -37,7 +36,7 @@ def interactive_heatmap(corr_map, title='', colbar_title='',
     fig = go.Figure()
     fig.add_trace(go.Heatmap(z=corr_map.values, x=corr_map.columns,
                              y=corr_map.index, colorscale=colormap,
-                             zmin=z_min, zmax=z_max,
+                             zmin=r_min, zmax=r_max,
                              colorbar=dict(title=colbar_title)))
     # fig.update_xaxes(side = "top")
     fig.update_layout(go.Layout(width=fig_width,
@@ -47,16 +46,70 @@ def interactive_heatmap(corr_map, title='', colbar_title='',
                                 title_font=dict(size=title_size),
                                 yaxis=dict(title=y_label, visible=True,
                                            autorange='reversed'),
-                                xaxis=dict(title=title, tickangle=tick_angle,
+                                xaxis=dict(title=x_label, tickangle=tick_angle,
                                            side='bottom')))
     return fig
 
 
-# need to be update just copy of single group
+
+def interactive_heatmap_with_slider(
+            corr_dfs, title='', colbar_title='',
+            colormap=px.colors.sequential.YlGnBu,
+            slider_label='Session ', y_label='Metrics by Bundles',
+            r_min=0.3, r_max=1, tick_angle=45, tick_font_size=12,
+            title_size=15, fig_width=600, fig_height=600,):
+    """
+    Generate an interactive heatmap with a slider. Slider could be
+    the sessions in time, the bundles or the subjects. The corr_dfs input
+    must be a list of correlation matrix corresponding to the parameter used
+    for the slider. If slider is session, corr_dfs correspond to a list of
+    matrix of all subjects, bundles and metrics for each session.
+
+    corr_dfs :          List of correlation matrix [index,column] x n_time
+    title :             Label corresponding to the heatmap title
+    colormap :          Color scale used to plot heatmap
+    colbar_title :      Title of colorbar
+    slider_label :      Label used for the set the slider
+    y_label :           Y label for the heatmap
+    r_min,r_max :       Minimun and maximum values used to set the colorbar
+    tick_angle :        Set angle of X tick labels
+    tick_font_size :    Set the tick font size
+    title_size :        Set the title font size
+    fig_width :         Set the width of large figure (not individual heatmap)
+    fig_height :        Set the height of large figure (not individual heatmap)
+
+    Return figure structure that could be save using write_html function.
+    """
+
+    frames = [
+        go.Frame(data=go.Heatmap(z=df.values, x=df.columns, y=df.index,
+                                 colorscale=colormap, zmin=r_min, zmax=r_max,
+                                 colorbar=dict(title=colbar_title)),
+                 name=slider_label + str(i+1))
+        for i, df in enumerate(corr_dfs)]
+
+    fig=go.Figure(data=frames[0].data, frames=frames).update_layout(
+        # iterate over frames to generate steps
+        sliders=[{"steps": [{"args": [[f.name],{"frame": {"duration": 0,
+                                                          "redraw": True},
+                                                "mode": "immediate",},],
+                             "label": f.name, "method": "animate",}
+                            for f in frames],}],
+        # Set figure size, x and y axis and Title
+        height=fig_height, width=fig_width,
+        xaxis={"title": title, "tickangle": tick_angle, 'side': 'top'},
+        title_x=0.5, font={'size': tick_font_size},
+        title_font=dict(size=title_size),
+        yaxis=dict(visible=True, autorange='reversed', title=y_label),)
+
+    return fig
+
+
+
 def interactive_heatmap_group(corr_group1, corr_group2, label_group1,
                               label_group2, title='', colbar_title="Pearson r",
                               colormap=px.colors.sequential.YlGnBu,
-                              y_label='', z_min=0.3, z_max=1,
+                              y_label='', r_min=0.3, r_max=1,
                               tick_font_size=15, title_size=20, tick_angle=90,
                               fig_width=700, fig_height=700,):
     """
@@ -89,14 +142,14 @@ def interactive_heatmap_group(corr_group1, corr_group2, label_group1,
     fig.append_trace(
         go.Heatmap(z=corr_group1.values, x=corr_group1.columns,
                    y=corr_group1.index, colorscale=colormap,
-                   colorbar=dict(title=colbar_title), zmin=z_min, zmax=z_max,
-                   name=label_group1)),row=1, col=1)
+                   colorbar=dict(title=colbar_title), zmin=r_min, zmax=r_max,
+                   name=label_group1),row=1, col=1)
 
     fig.append_trace(
         go.Heatmap(z=corr_group2.values, x=corr_group2.columns,
                    y=corr_group2.index, colorscale=colormap,
-                   colorbar=dict(title=colbar_title), zmin=z_min, zmax=z_max,
-                   name=label_group2)), row=1, col=2)
+                   colorbar=dict(title=colbar_title), zmin=r_min, zmax=r_max,
+                   name=label_group2), row=1, col=2)
 
     # Update axis heatmap group 1
     fig.update_yaxes(title_text=y_label,visible=True,
@@ -129,56 +182,6 @@ def interactive_heatmap_group(corr_group1, corr_group2, label_group1,
 
 
 
-def interactive_heatmap_with_slider(
-            corr_dfs, title='', colbar_title="Pearson r",
-            colormap=px.colors.sequential.YlGnBu,
-            slider_label='Session ', y_label='Metrics by Bundles',
-            r_min=0.3, r_max=1, tick_angle=45, tick_font_size=12,
-            title_size=15, fig_width=800, fig_height=800,):
-    """
-    Generate an interactive heatmap with a slider. Slider could be
-    the sessions in time, the bundles or the subjects. The corr_dfs input
-    must be a list of correlation matrix corresponding to the parameter used
-    for the slider. If slider is session, corr_dfs correspond to a list of
-    matrix of all subjects, bundles and metrics for each session.
-
-    corr_dfs :          List of correlation matrix [index,column] x n_time
-    title :             Label corresponding to the heatmap title
-    colormap :          Color scale used to plot heatmap
-    colbar_title :      Title of colorbar
-    slider_label :      Label used for the set the slider
-    y_label :           Y label for the heatmap
-    r_min,r_max :       Minimun and maximum values used to set the colorbar
-    tick_angle :        Set angle of X tick labels
-    tick_font_size :    Set the tick font size
-    title_size :        Set the title font size
-    fig_width :         Set the width of large figure (not individual heatmap)
-    fig_height :        Set the height of large figure (not individual heatmap)
-
-    Return figure structure that could be save using write_html function.
-    """
-
-    frames = [
-        go.Frame(data=go.Heatmap(z=df.values, x=df.columns, y=df.index,
-                                 colorscale=colormap, zmin=r_min, zmax=r_max),
-                 name=slider_label + str(i+1))
-        for i, df in enumerate(corr_dfs)]
-
-    fig=go.Figure(data=frames[0].data, frames=frames).update_layout(
-        # iterate over frames to generate steps
-        sliders=[{"steps": [{"args": [[f.name],{"frame": {"duration": 0,
-                                                          "redraw": True},
-                                                "mode": "immediate",},],
-                             "label": f.name, "method": "animate",}
-                            for f in frames],}],
-        # Set figure size, x and y axis and Title
-        height=fig_height, width=fig_width,
-        xaxis={"title": title, "tickangle": tick_angle, 'side': 'top'},
-        title_x=0.5, font={'size': tick_font_size},
-        title_font=dict(size=title_size),
-        yaxis=dict(visible=True, autorange='reversed', title=y_label),)
-
-    return fig
 
 
 def interactive_heatmap_group_with_slider(
