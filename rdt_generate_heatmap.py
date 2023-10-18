@@ -23,7 +23,7 @@ import plotly.express as px
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from dataframe.func import (get_multi_corr_map, get_corr_map,
-                           get_row_name_from_col)
+                            get_row_name_from_col, check_reorder_measure)
 from plots.utils import new_order_measure
 from plots.heatmap import interactive_heatmap, interactive_heatmap_with_slider
 
@@ -121,30 +121,17 @@ def main():
     if 'Unnamed: 0' in df.columns.tolist():
         df.drop('Unnamed: 0', axis=1, inplace=True)
     df = df[df['Statistics'] == args.use_stats]
-    df = df[~(df['Method'].isin(['Streamlines','Lesion']))]
 
     if args.custom_reorder is not None:
         reorder_metrics = args.custom_reorder
     else:
         reorder_metrics = new_order_measure
 
-    # Create a list to reorder measure
-    if args.reorder_measure:
-        if len(reorder_metrics) != len(df.Measures.unique().tolist()):
-            if args.filter_measures:
-                missing_metric = []
-                for metric_item in df.Measures.unique():
-                    if metric_item not in reorder_metrics:
-                        missing_metric.append(metric_item)
-                df = df.loc[~(df.Measures.isin(
-                                       missing_metric))].reset_index(drop=True)
-                print("With the --filter_measures option the following metrics"
-                      " are removed.\n", missing_metric)
-            else:
-                print("The listed metrics don't match with the default "
-                      "metrics list.\n Use --custom_reorder option to parse "
-                      " a custom list or use --filter_measures.\n")
 
+    if args.reorder_measure:
+        df = check_reorder_measure(df, reorder_metrics,
+                                   rm_missing_metrics=args.filter_measures)
+        # Create a list to reorder measure
         new_order = []
         for measure in reorder_metrics:
             for bundle in df['Bundles'].unique():
