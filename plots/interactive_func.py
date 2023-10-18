@@ -12,12 +12,13 @@ from plotly.subplots import make_subplots
 
 # or interacive_distribution ?
 def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
-                             colormap='Set2', f_column=False, f_row=False,
-                             column_wrap=False, row_wrap=False, bgcolor="white",
+                             colormap='Set2', f_column=None, f_row=None,
+                             column_wrap=None, row_wrap=None, bgcolor="white",
                              column_spacing=0.09, row_spacing=0.09, title_size=20,
-                             show_legend=False, custom_order=False, font_size=15,
-                             fig_width=700, fig_height=700,line_width=1,
-                             x_label='', y_label='',):
+                             show_legend=False, custom_order=None, font_size=15,
+                             fig_width=900, fig_height=700,line_width=1,
+                             x_label='', y_label='',custom_y_range=False,
+                             print_yaxis_range=False):
     """
     Generate interactive distribution plot according to category (y_column).
 
@@ -47,11 +48,10 @@ def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
     fig = px.scatter(df, x=x_column, y=y_column, color=color_column,
                      facet_col=f_column, facet_col_wrap=column_wrap,
                      facet_col_spacing=column_spacing, facet_row=f_row,
-                     facet_row_wrap=row_wrap, facet_row_spacing=row_spacing,
+                     facet_row_spacing=row_spacing,
                      height=fig_height, width=fig_width,
                      title=figtitle, color_discrete_map=colormap,
-                     category_orders=custom_order, print_yaxis_range=False,
-                     custom_y_range=False,)
+                     category_orders=custom_order)
 
     fig.for_each_annotation(lambda anot: anot.update(
                                                 text=anot.text.split("=")[-1]))
@@ -70,6 +70,7 @@ def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
             if type(fig.layout[axis]) == go.layout.YAxis:
                 y_axis_name.append(axis)
 
+        y_axis_name.sort()
         for idx, yname in enumerate(y_axis_name):
             curr_key = fig.layout.annotations[idx].text
             fig.layout[yname].range = custom_y_range[curr_key]
