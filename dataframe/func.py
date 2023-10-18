@@ -175,6 +175,41 @@ def prepare_df_for_plots(df):
         return df.reset_index(drop=True)
 
 
+def check_reorder_measure(df, reorder_metrics_list, rm_missing_metrics=False):
+    """
+    Check if there is concordance between a reorder metrics list and Metrics
+    listed in the dataframe.
+
+    df:                     DataFrame
+    reorder_metrics_list:   List of metrics in specific order
+    rm_missing_metrics:     Boolean. If True the metrics in dataframe not
+                            present in the reorder_metrics_list are removed.
+
+    Return                  Error message /or
+                            The Dataframe without missing metrics if
+                            rm_missing_metrics is True.
+    """
+    missing_metric = []
+    for metric_item in df.Measures.unique():
+        if metric_item not in reorder_metrics_list:
+            missing_metric.append(metric_item)
+
+    if not missing_metric:
+        return df
+
+    if len(missing_metric) != 0:
+        if rm_missing_metrics:
+            print("With the --filter_measures option the following metrics"
+                  " are removed.\n", missing_metric)
+            return df.loc[~(df.Measures.isin(
+                                   missing_metric))].reset_index(drop=True)
+        else:
+            raise ValueError('The listed metrics in df do not match with the'
+                             ' default metrics list.\n  Use --custom_reorder'
+                             ' option to parse a custom list or use'
+                             ' --filter_measures.')
+
+
 def generate_summary_table(df, by_cols=['Measures','Value'], round_at = 3,
                            select_stats_col = ['mean', 'std', '50%','min', 'max'],
                            custom_col_name = '',):
