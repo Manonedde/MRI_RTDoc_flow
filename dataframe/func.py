@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import copy
+
 import pandas as pd
 import numpy as np
 
@@ -8,9 +8,12 @@ import numpy as np
 
 def split_col(x):
     cols, value = x
-    parse_col_value = *cols.split("."), value
-    return parse_col_value
+    parse_val = *cols.split("."), value
+    return parse_val
 
+
+def get_row_name_from_col(df, col_name):
+    return df[col_name].unique().tolist()
 
 # Reshpae long type CSV to wide format
 def reshape_to_wide_format(long_format_df, selected_cols):
@@ -26,8 +29,9 @@ def reshape_to_wide_format(long_format_df, selected_cols):
 
 def convert_lesion_data(df, colname_with_list, colname_without_list):
     """
-    Function for dealing with jsons which, when converted into a
-    dataframe, creates lists in columns.
+    Function to deal with jsons which, when converted into a
+    dataframe, creates lists in columns. For now, it's specific to
+    lesion_jsons output from tractometry_flow.
     """
     # extract data with list in column
     df_list = df[df[0].apply(lambda x: isinstance(x, list))]
@@ -96,16 +100,18 @@ def merged_csv(df1, df2, label1, label2, colname):
     return pd.concat([df1,df2], ignore_index=True, sort=False)
 
 
-def compute_ecvf_from_df(df):
+
+
+def compute_ecvf_from_df(df, select_column='metrics'):
     """
     Compute ECVF metrics using ICVF (1-ICVF) from dataframe.
     Not recommanded. Please use the scil_compute_ecvf.py .'
     """
-    tmp = df[df.Measures == 'ICVF']
-    tmp['Measures']= 'ECVF'
-    tmp['Value_tmp']= 1 - tmp['Value']
-    tmp['Value'] = tmp['Value_tmp']
-    tmp.drop('Value_tmp', axis=1, inplace=True)
+    tmp = df[df[select_column] == 'ICVF']
+    tmp['metrics']= 'ECVF'
+    tmp['value_tmp']= 1 - tmp['value']
+    tmp['value'] = tmp['value_tmp']
+    tmp.drop('value_tmp', axis=1, inplace=True)
     df = pd.concat([df,tmp])
     return df.reset_index(drop=True)
 
@@ -133,7 +139,7 @@ def extract_average_and_profile(df):
 
     return average.reset_index(drop=True), profile.reset_index(drop=True)
 
-
+# Used for imeka dataframe
 def prepare_df_for_plots(df):
         """
         Function written for Stefano specific plots
@@ -161,8 +167,119 @@ def prepare_df_for_plots(df):
         df.drop(['Sid','Statistics','rbx_version'], axis=1, inplace=True)
         df=df.rename(columns={'Sid2':'Sid'})
 
-        rm_sid = ['sub-009-hc', 'sub-013-hc', 'sub-017-hc','sub-025-hc','sub-001-ms','sub-021-ms']
+        rm_sid = ['sub-009-hc', 'sub-013-hc', 'sub-017-hc','sub-025-hc',
+                  'sub-001-ms','sub-021-ms']
         for sbj in rm_sid:
             df = df[~(df['Sid'] == sbj)]
 
         return df.reset_index(drop=True)
+
+
+def generate_summary_table(df, by_cols=['Measures','Value'], round_at = 3,
+                           select_stats_col = ['mean', 'std', '50%','min', 'max'],
+                           custom_col_name = '',):
+    """
+    Generate a summary table from Dataframe.
+
+    df :                Dataframe
+    by_cols :           Columns name to group dataframe : [condition_colum(s),
+                                                           values_column]
+                        Condition_columns is the name of the column(s) chosen
+                        to group the values. If several columns are used as
+                        arguments, provide a list: [['col_1,col_2','col_n'],
+                                                     col_values].
+                        values_column can contain only one column (stats).
+    round_at :          Decimal places after the decimal point
+    select_stats_col :  Use to select only certain columns. The order provided
+                        will reorganize the table columns accordingly.
+                        The complete list is : ['count', 'mean', 'std', 'min',
+                        '25%', '50%', '75%', 'max', 'range'].
+    custom_col_name :   Use to rename columns corresponding to those in
+                        select_stats_col. By default, all columns are renamed.
+
+    Return table that could be save using .to_csv() or .to_latex() function.
+    """
+
+    summary_table = np.round(df.groupby(by_cols[0])[by_cols[1]].describe(),
+                             round_at)
+    summary_table.insert(8, 'range', summary_table['max'] -
+                                     summary_table['min'])
+
+    if select_stats_col:
+        summary_table = summary_table[select_stats_col]
+
+    if custom_col_name == '':
+        custom_col_name = ['Count', 'Mean', 'STD', 'Min',
+                          'Inferior Quartile 25%',  'Median',
+                          'Superior Quartile 75%', 'Max', 'Range']
+
+    summary_table.columns = custom_col_name
+
+    return summary_table
+
+
+def get_multi_corr_map(df, multi_col_arg, pivot_index, pivot_columns,
+                       pivot_value, reorder_col=False, post_pearson=None,
+                       colbar_title = 'Pearson r', longitudinal=False):
+    corr = []
+    for multi_col in df[multi_col_arg].unique().tolist():
+        tmp = df.loc[df[multi_col_arg] == multi_col]
+        if longitudinal:
+            tmp = tmp.groupby([pivot_index,
+                               pivot_columns])[pivot_value].mean().reset_index()
+        if reorder_col:
+            corr_tmp = tmp.pivot(index=pivot_index,columns=pivot_columns,
+                                 values=pivot_value
+                                 ).reset_index().reindex(columns=reorder_col
+                                                        ).corr()
+        else:
+            corr_tmp = tmp.pivot(index=pivot_index, columns=pivot_columns,
+                                 values=pivot_value).reset_index().corr()
+
+        if post_pearson == 'absolute':
+            corr_tmp = np.absolute(corr_tmp)
+            colbar_title = 'Absolute Pearson r'
+
+        if post_pearson == 'square':
+            corr_tmp = np.square(corr_tmp)
+            colbar_title = 'Squared Pearson r'
+
+        corr.append(corr_tmp)
+
+    return corr, colbar_title
+
+
+def get_corr_map(df, pivot_index, pivot_columns, pivot_value,
+                 reorder_col=False, post_pearson=None,
+                 colbar_title = 'Pearson r'):
+
+    df = df.groupby([pivot_index,
+                     pivot_columns])[pivot_value].mean().reset_index()
+    if reorder_col:
+        corr = df.pivot(index=pivot_index, columns=pivot_columns,
+                        values=pivot_value).reset_index().reindex(
+                                                columns=reorder_col).corr()
+    else:
+        corr = df.pivot(index=pivot_index, columns=pivot_columns,
+                        values=pivot_value).reset_index().corr()
+    if post_pearson == 'absolute':
+        corr = np.absolute(corr)
+        colbar_title = 'Absolute Pearson r'
+
+    if post_pearson == 'square':
+        corr = np.square(corr)
+        colbar_title = 'Squared Pearson r'
+
+    return corr, colbar_title
+
+
+def get_subset_data(df, keep_columns=None, select_row_by_colum=None,
+                    combine=False, ):
+    if keep_columns:
+        df=df[keep_columns]
+
+    if select_row_by_colum:
+        df.loc[(df.Bundles.isin(['AC_v10','UF_v10'])) & (df.Measures.isin(['AD','FA']))]
+
+def get_data_from(df, column_name, row_name):
+    return df.loc[df[column_name].isin(row_name)]
