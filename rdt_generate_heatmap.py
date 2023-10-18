@@ -22,7 +22,8 @@ import plotly.graph_objs as go
 import plotly.express as px
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
-from dataframe.func import get_multi_corr_map, get_corr_map, get_row_name_from_col
+from dataframe.func import (get_multi_corr_map, get_corr_map,
+                           get_row_name_from_col)
 from plots.utils import new_order_measure
 from plots.heatmap import interactive_heatmap, interactive_heatmap_with_slider
 
@@ -49,6 +50,9 @@ def _build_arg_parser():
     frames.add_argument('--use_as_slider',
                         help='Column name. Generates a heatmap for each unique'
                              ' argument corresponding to the column.')
+    frames.add_argument('--use_stats', default='mean',
+                        help='Use to select a specific statistic. '
+                             '[%(default)s]')
     frames.add_argument('--custom_reorder',
                         help='List. Use to custom reorder measure for heatmap.'
                              '\nRequire --reorder_measure option.')
@@ -56,9 +60,6 @@ def _build_arg_parser():
                         help='Use to reorder measure for heatmap.\nBy '
                              'default measure are reordered as follow : \n'
                              'DTI, DTI-FW, HARDI, NODDI, MTI.')
-    frames.add_argument('--use_stats', default='mean',
-                        help='Use to select a specific statistic. '
-                             '[%(default)s]')
     frames.add_argument('--filter_measures', action='store_true',
                         help='Use to filter missing metrics when you reorder.')
     frames.add_argument('--apply_on_pearson',
@@ -135,8 +136,10 @@ def main():
                 for metric_item in df.Measures.unique():
                     if metric_item not in reorder_metrics:
                         missing_metric.append(metric_item)
-                df = df.loc[~(df.Measures.isin(missing_metric))].reset_index(drop=True)
-                print("The following metrics are removed.\n", missing_metric)
+                df = df.loc[~(df.Measures.isin(
+                                       missing_metric))].reset_index(drop=True)
+                print("With the --filter_measures option the following metrics"
+                      " are removed.\n", missing_metric)
             else:
                 print("The listed metrics don't match with the default "
                       "metrics list.\n Use --custom_reorder option to parse "
@@ -155,21 +158,22 @@ def main():
     # Generate Heatmap
     if args.split_by:
         split_arg_names = get_row_name_from_col(df, args.split_by)
-        corr_map, colorbar_title = get_multi_corr_map(df, args.split_by,
-                                        'Sid','Measures_Bundles',
-                                        'Value', reorder_col=new_order,
-                                        longitudinal=args.longitudinal,
-                                        post_pearson=args.apply_on_pearson)
+        corr_map, colorbar_title = get_multi_corr_map(
+                                            df, args.split_by, 'Sid',
+                                            'Measures_Bundles', 'Value',
+                                            reorder_col=new_order,
+                                            longitudinal=args.longitudinal,
+                                            post_pearson=args.apply_on_pearson)
         #figs = {}
         for corr_name, corr in zip(split_arg_names, corr_map):
             if args.ylabel is None:
                 args.ylabel = 'Metrics of ' + args.split_by + ' ' + str(corr_name)
-            fig = interactive_heatmap(corr, title=args.title,
+            fig = interactive_heatmap(corr, title=args.title, title_size=25,
                                       colbar_title=colorbar_title,
                                       colormap=px.colors.sequential.YlGnBu,
-                                      y_label=args.ylabel,
-                                      r_min=args.r_range[0], r_max=args.r_range[1],
-                                      tick_font_size=12, title_size=25, tick_angle=90,
+                                      tick_angle=90, r_min=args.r_range[0],
+                                      r_max=args.r_range[1],
+                                      tick_font_size=12, y_label=args.ylabel,
                                       fig_width=args.plot_size[0],
                                       fig_height=args.plot_size[1])
             #figs['fig_'+str(corr_name)] = fig
@@ -184,36 +188,36 @@ def main():
 
     # Heatmap with slider
     if args.use_as_slider:
-        corr_map, colorbar_title = get_multi_corr_map(df, args.use_as_slider,
-                                        'Sid','Measures_Bundles',
-                                        'Value', reorder_col=new_order,
+        corr_map, colorbar_title = get_multi_corr_map(
+                                        df, args.use_as_slider, 'Sid',
+                                        'Measures_Bundles', 'Value',
+                                        reorder_col=new_order,
                                         post_pearson=args.apply_on_pearson,
                                         longitudinal=args.longitudinal)
         # Generate figure
-        fig = interactive_heatmap_with_slider(corr_map,title=args.title,
-                                  colbar_title=colorbar_title,
-                                  colormap=px.colors.sequential.YlGnBu,
-                                  y_label=args.ylabel,
-                                  r_min=args.r_range[0], r_max=args.r_range[1],
-                                  tick_font_size=12, title_size=25, tick_angle=90,
-                                  fig_width=args.plot_size[0],
-                                  fig_height=args.plot_size[1])
+        fig = interactive_heatmap_with_slider(
+                        corr_map, title=args.title, colbar_title=colorbar_title,
+                        colormap=px.colors.sequential.YlGnBu, tick_angle=90,
+                        y_label=args.ylabel, tick_font_size=12, title_size=25,
+                        r_min=args.r_range[0], r_max=args.r_range[1],
+                        fig_width=args.plot_size[0],
+                        fig_height=args.plot_size[1])
 
         args.out_name = args.out_name + '_with_slider'
 
     else:
         # Heatmap without slider (i.e. averaged values)
-        corr_map, colorbar_title = get_corr_map(df, 'Sid','Measures_Bundles',
-                                                'Value',
-                                                reorder_col=new_order,
-                                                post_pearson=args.apply_on_pearson)
+        corr_map, colorbar_title = get_corr_map(
+                                    df, 'Sid', 'Measures_Bundles', 'Value',
+                                    reorder_col=new_order,
+                                    post_pearson=args.apply_on_pearson)
         # Generate figure
-        fig = interactive_heatmap(corr_map, title=args.title,
+        fig = interactive_heatmap(corr_map, title=args.title,  title_size=25,
                                   colbar_title=colorbar_title,
                                   colormap=px.colors.sequential.YlGnBu,
                                   x_label=args.xlabel, y_label=args.ylabel,
                                   r_min=args.r_range[0], r_max=args.r_range[1],
-                                  tick_font_size=12, title_size=25, tick_angle=90,
+                                  tick_font_size=12, tick_angle=90,
                                   fig_width=args.plot_size[0],
                                   fig_height=args.plot_size[1])
 
