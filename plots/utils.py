@@ -43,3 +43,44 @@ def save_figures_as(fig, out_path, out_name, is_slider=False,
     else:
         fig.write_html(os.path.join(out_path, out_name  + '.html'))
 
+
+def check_df_for_distribution(df, specific_filter=None):
+    """
+    Function that checks the presence or absence of some columns and the compatibility of parameters used by the script
+
+    df:         DataFrame
+    parameters: Dictionary. parameters used by the script
+    use_data:   If None, display a warning message.
+
+    """
+    if 'Section' in df.columns.tolist():
+        raise ValueError('The csv contains a section column.\n'
+                         'This script only deals with average measurements.')
+
+    if 'Method' not in df.columns.tolist():
+        raise ValueError("The csv not contains Method column. "
+                         "\nRename column   or add it.")
+
+    if len(df['Method'].unique().tolist()) > 1 and specific_filter is None:
+        raise ValueError('Multiple method categories are found in csv files.\n'
+                         'Please provide a csv file containing single Method or'
+                         ' use --specific_method options.')
+
+    if len(df['Statistics'].unique().tolist()) > 1:
+        raise ValueError('Multiple statistics are found in csv files.\n '
+                         'Please provide a csv file containing single Statistic'
+                         ' or use --specific_stats options.')
+
+
+def check_agreement_with_dict(df, col_to_check, dict_parameters,
+                              multiple_args=False, use_data=None):
+    if multiple_args:
+        for unique_arg in df[col_to_check].unique().tolist():
+            if unique_arg not in dict_parameters:
+                raise ValueError("No match colors is found for ", unique_arg, 
+                                 ".\nPlease use --custom_colors option to       provide specific colors. Or change --rbx_version option.")
+    else:
+        if df[col_to_check].unique().tolist()[0] not in dict_parameters:
+            if use_data is None:
+                raise ValueError('No match is found in default parameter.\n '
+                                 'Please use --use_data option or use --custom_order\n and --custom_yaxis options to provide specific information.')
