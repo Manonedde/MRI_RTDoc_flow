@@ -10,17 +10,13 @@ rdt_generate_mean_measures_across_bundles_plot.py dti.csv
 """
 
 import argparse
-
-import os
 import pandas as pd
 
-import plotly.graph_objs as go
-import plotly.express as px
-
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
-
-from plots.utils import (average_parameters_dict, order_plot_dict,
-                        bundle_dict_color_v1, bundle_dict_color_v10)
+from plots.parameters import (average_parameters_dict, order_plot_dict,
+                              bundle_dict_color_v1, bundle_dict_color_v10)
+from plots.utils import (check_df_for_distribution, check_agreement_with_dict,
+                         save_figures_as)
 from plots.interactive_func import interactive_scatter
 
 
@@ -63,8 +59,8 @@ def _build_arg_parser():
     scatter.add_argument('--print_yaxis_range', action='store_true',
                          help='Use to check/update the y axis range. ')
 
-    scatter.add_argument('--save_as', default='html', choices={'html', 'png'},
-                         help='Save plot as png. Require kaleido. [%(default)s]')
+    scatter.add_argument('--save_as_png', action='store_true',
+                         help='Save plot as png. Require kaleido.')
     scatter.add_argument('--dpi_scale', type=int, default=6,
                          help='Use to increase (>1) or decrease (<1) the '
                               ' image resolution. [%(default)s]')
@@ -82,10 +78,11 @@ def main():
     if args.out_dir is None:
         args.out_dir = './'
 
+    # Load and filter Dataframe
     df = pd.read_csv(args.in_csv)
-
     if 'Unnamed: 0' in df.columns.tolist():
         df.drop('Unnamed: 0', axis=1, inplace=True)
+
     df = df[df['Statistics'] == args.use_stats]
     df = df[df['rbx_version'] == args.rbx_version]
 
@@ -94,30 +91,10 @@ def main():
 
     df = df.reset_index(drop=True)
 
-    # check lists
-    if 'Section' in df.columns.tolist():
-        parser.error('The csv contains a section column.\n'
-                     'This script only deals with average measurements.')
-
-    if 'Method' not in df.columns.tolist():
-        print("The csv not contains Method column. \nRename column or add it. ")
-
-    if len(df['Method'].unique().tolist()) > 1 and args.specific_method is None:
-        parser.error('Multiple method categories are found in csv files.\n '
-                     'Please provide a csv file containing single Method or '
-                     'use --specific_method options.')
-
-    if len(df['Statistics'].unique().tolist()) > 1:
-        parser.error('Multiple statistics are found in csv files.\n '
-                     'Please provide a csv file containing single Statistic or '
-                     'use --specific_stats options.')
-
-    if df['Method'].unique().tolist()[0] not in order_plot_dict:
-        if args.use_data is None:
-            parser.error('Method does not exist in default parameter.\n '
-                         'Please use --use_data option or use --custom_order\n'
-                         'and --custom_yaxis options to provide specific'
-                         ' informations.')
+    # check Dataframe shape before plot
+    check_df_for_distribution(df,specific_filter=args.specific_method)
+    check_agreement_with_dict(df, 'Method', order_plot_dict,
+                              use_data=args.use_data)
 
     if args.custom_colors is not None:
         bundle_colors = args.custom_colors
@@ -125,13 +102,10 @@ def main():
         bundle_colors = bundle_dict_color_v10
     else:
         bundle_colors = bundle_dict_color_v1
-
-    for bundle in df['Bundles'].unique().tolist():
-        if bundle not in bundle_colors:
-            parser.error("No match colors is found for ", bundle, "."
-                         "\nPlease use --custom_colors option to provide "
-                         "specific colors. Or change --rbx_version option.")
-
+    
+    check_agreement_with_dict(df, 'Bundles', bundle_colors, multiple_args=True,
+                              use_data=args.use_data)
+    
     curr_method = df['Method'].unique().tolist()[0]
     curr_title = "Distribution of " + curr_method + " measurements"
 
@@ -143,31 +117,24 @@ def main():
         custom_yaxis = args.custom_y
     elif args.use_data:
         custom_order = df['Measures'].unique().tolist()
-        custom_yaxis =  False
+        custom_yaxis = False
     else:
         custom_order = order_plot_dict[curr_method]
         custom_yaxis = average_parameters_dict
+    
+    print(custom_yaxis)
 
     if args.apply_factor:
-        custom_yaxis[1][1] = custom_yaxis[1][1] * 10
+        custom_yaxis[1][1] = custom_yaxis[1][1]*10
 
     col_wrap = len(df['Measures'].unique().tolist()) / 2
 
-    fig = interactive_scatter(df, "Bundles", "Value", "Bundles",
-                              colormap=bundle_colors, f_column="Measures",
-                              column_wrap=int(col_wrap),
-                              custom_order={"Measures": custom_order},
-                              figtitle=curr_title, fig_width=args.plot_size[0],
-                              fig_height=args.plot_size[1],
-                              print_yaxis_range=args.print_yaxis_range,
-                              custom_y_range=custom_yaxis)
-
-    if args.save_as == 'png':
-        fig.write_image(os.path.join(args.out_dir, args.out_name + '.png'),
-                        scale=args.dpi_scale, height=args.plot_size[1],
-                        width=args.plot_size[0])
-    else:
-        fig.write_html(os.path.join(args.out_dir, args.out_name + '.html'))
+    fig = interactive_scatter(
+                df, "Bundles", "Value", "Bundles", colormap=bundle_colors, f_column="Measures", column_wrap=int(col_wrap), custom_order={"Measures": custom_order}, figtitle=curr_title, 
+                fig_width=args.plot_size[0], fig_height=args.plot_size[1],print_yaxis_range=args.print_yaxis_range,custom_y_range=custom_yaxis)
+    
+    save_figures_as(fig, args.out_dir, args.out_name, 
+                            save_as_png=args.save_as_png)
 
 
 if __name__ == '__main__':
