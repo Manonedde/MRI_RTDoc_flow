@@ -54,7 +54,7 @@ def save_figures_as(fig, out_path, out_name, is_slider=False,
         fig.write_html(os.path.join(out_path, out_name  + '.html'))
 
 
-def check_df_for_distribution(df, specific_filter=None):
+def check_df_for_distribution(df, split_filter=None):
     """
     Function that checks the presence or absence of some columns and the
     compatibility of parameters used by the script.
@@ -70,12 +70,12 @@ def check_df_for_distribution(df, specific_filter=None):
 
     if 'Method' not in df.columns.tolist():
         raise ValueError("The csv not contains Method column. "
-                         "\nRename column   or add it.")
+                         "\nRename column or add it.")
 
-    if len(df['Method'].unique().tolist()) > 1 and specific_filter is None:
+    if len(df['Method'].unique().tolist()) > 1 and split_filter is None:
         raise ValueError('Multiple method categories are found in csv files.\n'
                          'Please provide a csv file containing single Method or'
-                         ' use --specific_method options.')
+                         ' use --specific_method or --split_by options.')
 
     if len(df['Statistics'].unique().tolist()) > 1:
         raise ValueError('Multiple statistics are found in csv files.\n '
@@ -84,14 +84,18 @@ def check_df_for_distribution(df, specific_filter=None):
 
 
 def check_agreement_with_dict(df, col_to_check, dict_parameters,
-                              multiple_args=False, use_data=None):
+                              multiple_args=None, use_data=False):
     if multiple_args:
         for unique_arg in df[col_to_check].unique().tolist():
             if unique_arg not in dict_parameters:
-                raise ValueError("No match colors is found for ", unique_arg, 
-                                 ".\nPlease use --custom_colors option to       provide specific colors. Or change --rbx_version option.")
+                raise ValueError("No match colors is found for ", unique_arg,
+                                 ".Please use --custom_colors option to "
+                                 "provide specific colors. Or change "
+                                 "--rbx_version option.")
     else:
         if df[col_to_check].unique().tolist()[0] not in dict_parameters:
             if use_data is None:
                 raise ValueError('No match is found in default parameter.\n '
-                                 'Please use --use_data option or use --custom_order\n and --custom_yaxis options to provide specific information.')
+                                 'Please use --use_data option or use "
+                                 '--custom_order and --custom_yaxis options '
+                                 'to provide specific information.')

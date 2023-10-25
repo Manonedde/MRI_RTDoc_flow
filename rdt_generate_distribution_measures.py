@@ -21,7 +21,7 @@ from dataframe.parameters import scaling_metrics
 from plots.parameters import (average_parameters_dict, order_plot_dict,
                               bundle_dict_color_v1, bundle_dict_color_v10)
 from plots.utils import (check_df_for_distribution, check_agreement_with_dict,
-                         save_figures_as)
+                         save_figures_as, split_df_by)
 from plots.interactive_func import interactive_scatter
 
 
@@ -90,7 +90,6 @@ def main():
     df = pd.read_csv(args.in_csv)
     if 'Unnamed: 0' in df.columns.tolist():
         df.drop('Unnamed: 0', axis=1, inplace=True)
-
     df = df[df['Statistics'] == args.use_stats]
     df = df[df['rbx_version'] == args.rbx_version]
 
@@ -106,34 +105,76 @@ def main():
     else:
         bundle_colors = bundle_dict_color_v1
 
+    # check Dataframe shape before plot
     check_agreement_with_dict(df, 'Bundles', bundle_colors, multiple_args=True,
                               use_data=args.use_data)
-
-    # check Dataframe shape before plot
-    check_df_for_distribution(df, specific_filter=args.specific_method)
+    check_df_for_distribution(df, split_filter=args.split_by)
     check_agreement_with_dict(df, 'Method', order_plot_dict,
-                              use_data=args.use_data)
+                              use_data=args.use_data, 
+                              multiple_args=args.split_by)
 
-    curr_method = df['Method'].unique().tolist()[0]
-    curr_title = "Distribution of " + curr_method + " measurements"
+    if args.split_by:
+        multi_df = split_df_by(df, args.split_by)
+        for frame in multi_df:
+            curr_method = frame[args.split_by].unique().tolist()[0]
+            curr_title = "Distribution of " + curr_method + " measurements"
 
-    if args.out_name is None:
-        args.out_name = curr_method + '_measurement_distribution'
+            if args.out_name is None:
+                args.out_name = curr_method + '_measurement_distribution'
+            
+            if args.custom_order and args.custom_y is not None:
+                custom_order = args.custom_order[curr_method]
+                custom_yaxis = args.custom_y
+            elif args.use_data:
+                custom_order = frame['Measures'].unique().tolist()
+                custom_yaxis = False
+            else:
+                custom_order = order_plot_dict[curr_method]
+                custom_yaxis = average_parameters_dict
 
-    if args.custom_order and args.custom_y is not None:
-        custom_order = args.custom_order
-        custom_yaxis = args.custom_y
-    elif args.use_data:
-        custom_order = df['Measures'].unique().tolist()
-        custom_yaxis = False
+            if args.apply_factor:
+                for metric in custom_order:
+                    if metric in scaling_metrics:
+                        custom_yaxis[metric][1] *= args.apply_factor
+            
+                col_wrap = len(frame['Measures'].unique().tolist()) / 2
+
+            fig = interactive_scatter(
+                frame, "Bundles", "Value", "Bundles", colormap=bundle_colors,
+                f_column="Measures", column_wrap=int(col_wrap),
+                custom_order={"Measures": custom_order}, figtitle=curr_title,
+                fig_width=args.plot_size[0], fig_height=args.plot_size[1],
+                print_yaxis_range=args.print_yaxis_range,
+                custom_y_range=custom_yaxis)
+
+            save_figures_as(fig, args.out_dir, args.out_name,
+                            save_as_png=args.save_as_png,
+                            dpi_scale=args.dpi_scale, 
+                            heigth_value=args.plot_size[1], 
+                            width_value=args.plot_size[0])
+    
     else:
-        custom_order = order_plot_dict[curr_method]
-        custom_yaxis = average_parameters_dict
 
-    if args.apply_factor:
-        for metric in custom_order:
-            if metric in scaling_metrics:
-                custom_yaxis[metric][1] *= args.apply_factor
+        curr_method = df['Method'].unique().tolist()[0]
+        curr_title = "Distribution of " + curr_method + " measurements"
+
+        if args.out_name is None:
+            args.out_name = curr_method + '_measurement_distribution'
+
+        if args.custom_order and args.custom_y is not None:
+            custom_order = args.custom_order
+            custom_yaxis = args.custom_y
+        elif args.use_data:
+            custom_order = df['Measures'].unique().tolist()
+            custom_yaxis = False
+        else:
+            custom_order = order_plot_dict[curr_method]
+            custom_yaxis = average_parameters_dict
+
+        if args.apply_factor:
+            for metric in custom_order:
+                if metric in scaling_metrics:
+                    custom_yaxis[metric][1] *= args.apply_factor
 
     col_wrap = len(df['Measures'].unique().tolist()) / 2
 

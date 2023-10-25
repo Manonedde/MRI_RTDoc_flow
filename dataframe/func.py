@@ -6,6 +6,7 @@ import numpy as np
 
 # Convert json
 
+
 def split_col(x):
     cols, value = x
     parse_val = *cols.split("."), value
@@ -16,11 +17,13 @@ def get_row_name_from_col(df, col_name):
     return df[col_name].unique().tolist()
 
 # Reshpae long type CSV to wide format
+
+
 def reshape_to_wide_format(long_format_df, selected_cols):
     col_name = copy.deepcopy(selected_cols)
-    wide_format = long_format_df.pivot(index = selected_cols,
-                                       columns = "stats")
-    wide_format = wide_format.reset_index(drop = True)
+    wide_format = long_format_df.pivot(index=selected_cols,
+                                       columns="stats")
+    wide_format = wide_format.reset_index(drop=True)
     measure_names = wide_format['value'].columns.tolist()
     wide_format.columns = wide_format.columns.droplevel()
     wide_format.columns = col_name + measure_names
@@ -39,33 +42,34 @@ def convert_lesion_data(df, colname_with_list, colname_without_list):
     df_list = df_list.explode(0).reset_index(drop=True)
     # Attribute labels to each lesion
     for roi in df_list['index'].unique():
-        df_list.loc[df_list['index'] == roi,'tmp'] = np.arange(
-                            len(df_list[df_list['index'] == roi])) + 1
+        df_list.loc[df_list['index'] == roi, 'tmp'] = np.arange(
+            len(df_list[df_list['index'] == roi])) + 1
     # Associate label to first column
     df_list['index'] = df_list['index'
-                        ] + '.' + df_list['tmp'].astype(int).astype(str)
+                               ] + '.' + df_list['tmp'].astype(int).astype(str)
     # Remove useless column
     df_list.drop('tmp', axis=1, inplace=True)
     # Split index into multiple columns
     values_with_list = [split_col(x) for x in df_list[["index", 0]].values]
-    df_lesion_with_list = pd.DataFrame(columns = colname_with_list,
-                                       data = values_with_list)
+    df_lesion_with_list = pd.DataFrame(columns=colname_with_list,
+                                       data=values_with_list)
 
     # lesion json without list
     df_nolist = df[~(df[0].apply(lambda x: isinstance(x, list)))]
-    values_without_list = [split_col(x) for x in df_nolist[["index", 0]].values]
-    df_lesion_without_list = pd.DataFrame(columns = colname_without_list,
-                                          data = values_without_list)
+    values_without_list = [split_col(x)
+                           for x in df_nolist[["index", 0]].values]
+    df_lesion_without_list = pd.DataFrame(columns=colname_without_list,
+                                          data=values_without_list)
 
     return pd.concat([df_lesion_with_list, df_lesion_without_list],
                      ignore_index=True, sort=False)
 
 
-def apply_factor_to_metric(df, metric, factor, column = 'metrics'):
+def apply_factor_to_metric(df, metric, factor, column='metrics'):
     tmp_met = df[(df[column] == metric) & (df.stats == 'mean')]
     if tmp_met.empty is not True:
         df.loc[(df[column] == metric) & (df.stats == 'mean'),
-                'value'] = tmp_met['value'] * factor
+               'value'] = tmp_met['value'] * factor
 
 
 def merged_left_right_data(df, group_col):
@@ -75,31 +79,28 @@ def merged_left_right_data(df, group_col):
     if 'lesion_label' in df.columns.tolist():
         lesion_label = df.loc[df.metrics == 'lesion_volume']
 
-    df['roi'] = df.roi.replace({'_L':'','_R':''}, regex=True)
+    df['roi'] = df.roi.replace({'_L': '', '_R': ''}, regex=True)
 
     # Diffusion data = group by mean()
-    diffusions = df.loc[~(df.Method.isin(['Lesion','Streamlines']))]
+    diffusions = df.loc[~(df.Method.isin(['Lesion', 'Streamlines']))]
     diffusions = diffusions.groupby(group_col)['value'].mean().reset_index()
 
     # Volume data = group by sum() of left and right volumes
-    volumes = df.loc[df.Method.isin(['Lesion','Streamlines'])]
+    volumes = df.loc[df.Method.isin(['Lesion', 'Streamlines'])]
     volumes = volumes.groupby(group_col)['value'].sum().reset_index()
 
     if 'lesion_label' in df.columns.tolist():
         return pd.concat([diffusions, volumes, lesion_label],
-                          ignore_index=True, sort=False)
+                         ignore_index=True, sort=False)
     else:
         return pd.concat([diffusions, volumes],
-                          ignore_index=True, sort=False)
-
+                         ignore_index=True, sort=False)
 
 
 def merged_csv(df1, df2, label1, label2, colname):
     df1[colname] = label1
     df2[colname] = label2
-    return pd.concat([df1,df2], ignore_index=True, sort=False)
-
-
+    return pd.concat([df1, df2], ignore_index=True, sort=False)
 
 
 def compute_ecvf_from_df(df, select_column='metrics'):
@@ -108,11 +109,11 @@ def compute_ecvf_from_df(df, select_column='metrics'):
     Not recommanded. Please use the scil_compute_ecvf.py .'
     """
     tmp = df[df[select_column] == 'ICVF']
-    tmp['metrics']= 'ECVF'
-    tmp['value_tmp']= 1 - tmp['value']
+    tmp['metrics'] = 'ECVF'
+    tmp['value_tmp'] = 1 - tmp['value']
     tmp['value'] = tmp['value_tmp']
     tmp.drop('value_tmp', axis=1, inplace=True)
-    df = pd.concat([df,tmp])
+    df = pd.concat([df, tmp])
     return df.reset_index(drop=True)
 
 
@@ -141,38 +142,38 @@ def extract_average_and_profile(df):
 
 # Used for imeka dataframe
 def prepare_df_for_plots(df):
-        """
-        Function written for Stefano specific plots
-        """
-        df.drop('Unnamed: 0', axis=1, inplace=True)
-        df = df[df['Statistics'] == 'mean']
-        df = df[~(df['Method'] == 'Streamlines')]
-        rm_metric = ['AFD','NuFO','RDF','AFD_sum','APower']
-        for metric in rm_metric:
-            df = df[~(df['Measures'] == metric)]
-        df = df[~(df['Bundles'] == 'CR')]
+    """
+    Function written for Stefano specific plots
+    """
+    df.drop('Unnamed: 0', axis=1, inplace=True)
+    df = df[df['Statistics'] == 'mean']
+    df = df[~(df['Method'] == 'Streamlines')]
+    rm_metric = ['AFD', 'NuFO', 'RDF', 'AFD_sum', 'APower']
+    for metric in rm_metric:
+        df = df[~(df['Measures'] == metric)]
+    df = df[~(df['Bundles'] == 'CR')]
 
-        df=df.loc[~(df.Sid == 'sub-003-hc_ses-2')]
-        df.loc[(df.Sid == 'sub-003-hc_ses-3'), 'Sid'] = 'sub-003-hc_ses-2'
-        df.loc[(df.Sid == 'sub-003-hc_ses-4'), 'Sid'] = 'sub-003-hc_ses-3'
-        df.loc[(df.Sid == 'sub-003-hc_ses-5'), 'Sid'] = 'sub-003-hc_ses-4'
-        df.loc[(df.Sid == 'sub-003-hc_ses-6'), 'Sid'] = 'sub-003-hc_ses-5'
+    df = df.loc[~(df.Sid == 'sub-003-hc_ses-2')]
+    df.loc[(df.Sid == 'sub-003-hc_ses-3'), 'Sid'] = 'sub-003-hc_ses-2'
+    df.loc[(df.Sid == 'sub-003-hc_ses-4'), 'Sid'] = 'sub-003-hc_ses-3'
+    df.loc[(df.Sid == 'sub-003-hc_ses-5'), 'Sid'] = 'sub-003-hc_ses-4'
+    df.loc[(df.Sid == 'sub-003-hc_ses-6'), 'Sid'] = 'sub-003-hc_ses-5'
 
-        df.loc[~(df.Sid == 'sub-010-ms_ses-5')]
-        df.loc[(df.Sid == 'sub-010-ms_ses-6'), 'Sid'] = 'sub-010-ms_ses-5'
+    df.loc[~(df.Sid == 'sub-010-ms_ses-5')]
+    df.loc[(df.Sid == 'sub-010-ms_ses-6'), 'Sid'] = 'sub-010-ms_ses-5'
 
-        df = compute_ecvf_from_df(df)
+    df = compute_ecvf_from_df(df)
 
-        df[['Sid2','Session']] = df['Sid'].str.split('_ses-', 1,expand=True)
-        df.drop(['Sid','Statistics','rbx_version'], axis=1, inplace=True)
-        df=df.rename(columns={'Sid2':'Sid'})
+    df[['Sid2', 'Session']] = df['Sid'].str.split('_ses-', 1, expand=True)
+    df.drop(['Sid', 'Statistics', 'rbx_version'], axis=1, inplace=True)
+    df = df.rename(columns={'Sid2': 'Sid'})
 
-        rm_sid = ['sub-009-hc', 'sub-013-hc', 'sub-017-hc','sub-025-hc',
-                  'sub-001-ms','sub-021-ms']
-        for sbj in rm_sid:
-            df = df[~(df['Sid'] == sbj)]
+    rm_sid = ['sub-009-hc', 'sub-013-hc', 'sub-017-hc', 'sub-025-hc',
+              'sub-001-ms', 'sub-021-ms']
+    for sbj in rm_sid:
+        df = df[~(df['Sid'] == sbj)]
 
-        return df.reset_index(drop=True)
+    return df.reset_index(drop=True)
 
 
 def check_reorder_measure(df, reorder_metrics_list, rm_missing_metrics=False):
@@ -202,7 +203,7 @@ def check_reorder_measure(df, reorder_metrics_list, rm_missing_metrics=False):
             print("With the --filter_measures option the following metrics"
                   " are removed.\n", missing_metric)
             return df.loc[~(df.Measures.isin(
-                                   missing_metric))].reset_index(drop=True)
+                missing_metric))].reset_index(drop=True)
         else:
             raise ValueError('The listed metrics in df do not match with the'
                              ' default metrics list.\n  Use --custom_reorder'
@@ -210,9 +211,10 @@ def check_reorder_measure(df, reorder_metrics_list, rm_missing_metrics=False):
                              ' --filter_measures.')
 
 
-def generate_summary_table(df, by_cols=['Measures','Value'], round_at = 3,
-                           select_stats_col = ['mean', 'std', '50%','min', 'max'],
-                           custom_col_name = '',):
+def generate_summary_table(df, by_cols=['Measures', 'Value'], round_at=3,
+                           select_stats_col=[
+                               'mean', 'std', '50%', 'min', 'max'],
+                           custom_col_name='',):
     """
     Generate a summary table from Dataframe.
 
@@ -238,15 +240,15 @@ def generate_summary_table(df, by_cols=['Measures','Value'], round_at = 3,
     summary_table = np.round(df.groupby(by_cols[0])[by_cols[1]].describe(),
                              round_at)
     summary_table.insert(8, 'range', summary_table['max'] -
-                                     summary_table['min'])
+                         summary_table['min'])
 
     if select_stats_col:
         summary_table = summary_table[select_stats_col]
 
     if custom_col_name == '':
         custom_col_name = ['Count', 'Mean', 'STD', 'Min',
-                          'Inferior Quartile 25%',  'Median',
-                          'Superior Quartile 75%', 'Max', 'Range']
+                           'Inferior Quartile 25%',  'Median',
+                           'Superior Quartile 75%', 'Max', 'Range']
 
     summary_table.columns = custom_col_name
 
@@ -255,7 +257,7 @@ def generate_summary_table(df, by_cols=['Measures','Value'], round_at = 3,
 
 def get_multi_corr_map(df, multi_col_arg, pivot_index, pivot_columns,
                        pivot_value, reorder_col=False, post_pearson=None,
-                       colbar_title = 'Pearson r', longitudinal=False):
+                       colbar_title='Pearson r', longitudinal=False):
     corr = []
     for multi_col in df[multi_col_arg].unique().tolist():
         tmp = df.loc[df[multi_col_arg] == multi_col]
@@ -263,10 +265,10 @@ def get_multi_corr_map(df, multi_col_arg, pivot_index, pivot_columns,
             tmp = tmp.groupby([pivot_index,
                                pivot_columns])[pivot_value].mean().reset_index()
         if reorder_col:
-            corr_tmp = tmp.pivot(index=pivot_index,columns=pivot_columns,
+            corr_tmp = tmp.pivot(index=pivot_index, columns=pivot_columns,
                                  values=pivot_value
                                  ).reset_index().reindex(columns=reorder_col
-                                                        ).corr()
+                                                         ).corr()
         else:
             corr_tmp = tmp.pivot(index=pivot_index, columns=pivot_columns,
                                  values=pivot_value).reset_index().corr()
@@ -286,14 +288,14 @@ def get_multi_corr_map(df, multi_col_arg, pivot_index, pivot_columns,
 
 def get_corr_map(df, pivot_index, pivot_columns, pivot_value,
                  reorder_col=False, post_pearson=None,
-                 colbar_title = 'Pearson r'):
+                 colbar_title='Pearson r'):
 
     df = df.groupby([pivot_index,
                      pivot_columns])[pivot_value].mean().reset_index()
     if reorder_col:
         corr = df.pivot(index=pivot_index, columns=pivot_columns,
                         values=pivot_value).reset_index().reindex(
-                                                columns=reorder_col).corr()
+            columns=reorder_col).corr()
     else:
         corr = df.pivot(index=pivot_index, columns=pivot_columns,
                         values=pivot_value).reset_index().corr()
@@ -311,10 +313,20 @@ def get_corr_map(df, pivot_index, pivot_columns, pivot_value,
 def get_subset_data(df, keep_columns=None, select_row_by_colum=None,
                     combine=False, ):
     if keep_columns:
-        df=df[keep_columns]
+        df = df[keep_columns]
 
     if select_row_by_colum:
-        df.loc[(df.Bundles.isin(['AC_v10','UF_v10'])) & (df.Measures.isin(['AD','FA']))]
+        df.loc[(df.Bundles.isin(['AC_v10', 'UF_v10']))
+               & (df.Measures.isin(['AD', 'FA']))]
+
 
 def get_data_from(df, column_name, row_name):
     return df.loc[df[column_name].isin(row_name)]
+
+def split_df_by(df, col_arg):
+    split_df = []
+    for unique_arg in df[col_arg].unique().tolist():
+        df_tmp = df.loc[df[col_arg] == unique_arg].reset_index(drop=True)
+        split_df.append(df_tmp)
+
+    return split_df
