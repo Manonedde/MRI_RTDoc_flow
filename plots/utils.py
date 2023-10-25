@@ -93,19 +93,23 @@ def check_item_in_dict(df, check_column, dict_parameters, use_data=False):
 
 
 def check_agreement_with_dict(df, check_column, input_parameters,
-                              rm_missing=False, colorscale=False):
+                              rm_missing=False, ignore_lenght=False):
     """
     Checks whether there is a match between a dictionary or parameter list and a
     list of the unique elements of the selected column in the database. 
     To remove items not listed in the default parameters, use the rm_missing
     option, otherwise use the custom* options. 
-    If the check concerns bundle color, set the colorscale argument to True. 
+    To ignore the length check, set ignore_length to True.
+    This is the case for bundle color dictionaries, for example. 
 
     df:                     DataFrame
     check_column:           Column name to check.
     input_parameters:       List or dict of items/parameters
     rm_missing:             Boolean. If True the missing items in dataframe
                             are removed.
+    ignore_lenght:          Check if the length of the check_column and
+                            input_parameters are equal.
+                            Set to True to ignore object length.
 
     Return                  Error message /or
                             The Dataframe without missing items if
@@ -118,12 +122,12 @@ def check_agreement_with_dict(df, check_column, input_parameters,
 
     if not missing_items:
         if (len(input_parameters) != len(df[check_column].unique().tolist())
-                and colorscale is False):
+                and ignore_lenght is False):
             raise ValueError('No missing items are detected, but the number'
                              ' of default items and that of the dataframe'
                              ' do not match.\nUse --custom_* options to parse'
-                             ' a custom list. For bundle colors put colorscale'
-                             'at True.')
+                             ' a custom list. For bundle colors put '
+                             'ignore_lenght at True.')
         else:
             return df
 

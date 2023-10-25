@@ -2,11 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import pandas as pd
-
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.subplots
 
 from plotly.subplots import make_subplots
 
@@ -114,8 +111,6 @@ def interactive_lineplot(df, x_col, y_col, color_col=False, use_order=False,
     fig.update_xaxes(title_text=x_label,visible=True)
 
     return fig
-
-
 
 
 def interactive_correlation(df, x_column, y_column, color_column, trend_line='ols',

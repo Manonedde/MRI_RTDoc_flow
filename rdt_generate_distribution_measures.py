@@ -15,6 +15,7 @@ rdt_generate_mean_measures_across_bundles_plot.py dti.csv
 
 import argparse
 import pandas as pd
+import plotly.express as px
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from dataframe.parameters import scaling_metrics
@@ -33,7 +34,7 @@ def _build_arg_parser():
     p.add_argument('in_csv',
                    help='CSV MRI data.')
 
-    p.add_argument('--out_name',
+    p.add_argument('--out_name', default='_measurement_distribution',
                    help='Output filename to save plot.')
     p.add_argument('--out_dir',
                    help='Output directory for the labeled mask.')
@@ -113,18 +114,16 @@ def main():
     # check Dataframe shape before plot
     check_df_for_distribution(df, split_filter=args.split_by)
     df = check_agreement_with_dict(df, 'Bundles', bundle_colors,
-                                   colorscale=True, 
+                                   ignore_lenght=True, 
                                    rm_missing=args.filter_missing)
     df = check_agreement_with_dict(df, 'Method', order_plot_dict,
-                                   rm_missing=args.filter_missing)
+                                   rm_missing=args.filter_missing, 
+                                   ignore_lenght=True)
 
     if args.split_by:
         multi_df, df_names = split_df_by(df, args.split_by)
         for frame, curr_method in zip(multi_df, df_names):
             curr_title = "Distribution of " + curr_method + " measurements"
-
-            if args.out_name is None:
-                args.out_name = curr_method + '_measurement_distribution'
 
             if args.custom_order and args.custom_y is not None:
                 custom_order = args.custom_order[curr_method]
@@ -141,7 +140,7 @@ def main():
                     if metric in scaling_metrics:
                         custom_yaxis[metric][1] *= args.apply_factor
 
-                col_wrap = len(frame['Measures'].unique().tolist()) / 2
+            col_wrap = len(frame['Measures'].unique().tolist()) / 2
 
             fig = interactive_scatter(
                 frame, "Bundles", "Value", "Bundles", colormap=bundle_colors,
@@ -151,7 +150,9 @@ def main():
                 print_yaxis_range=args.print_yaxis_range,
                 custom_y_range=custom_yaxis)
 
-            save_figures_as(fig, args.out_dir, args.out_name,
+            outname = curr_method + args.out_name
+
+            save_figures_as(fig, args.out_dir, outname,
                             save_as_png=args.save_as_png,
                             dpi_scale=args.dpi_scale,
                             heigth_value=args.plot_size[1],
@@ -159,11 +160,8 @@ def main():
 
     else:
 
-        curr_method = df['Method'].unique().tolist()[0]
-        curr_title = "Distribution of " + curr_method + " measurements"
-
-        if args.out_name is None:
-            args.out_name = curr_method + '_measurement_distribution'
+        single_method = df['Method'].unique().tolist()[0]
+        curr_title = "Distribution of " + single_method + " measurements"
 
         if args.custom_order and args.custom_y is not None:
             custom_order = args.custom_order
@@ -172,7 +170,7 @@ def main():
             custom_order = df['Measures'].unique().tolist()
             custom_yaxis = False
         else:
-            custom_order = order_plot_dict[curr_method]
+            custom_order = order_plot_dict[single_method]
             custom_yaxis = average_parameters_dict
 
         if args.apply_factor:
@@ -180,16 +178,18 @@ def main():
                 if metric in scaling_metrics:
                     custom_yaxis[metric][1] *= args.apply_factor
 
-    col_wrap = len(df['Measures'].unique().tolist()) / 2
+        col_wrap = len(df['Measures'].unique().tolist()) / 2
 
-    fig = interactive_scatter(
-        df, "Bundles", "Value", "Bundles", colormap=bundle_colors,
-        f_column="Measures", column_wrap=int(col_wrap),
-        custom_order={"Measures": custom_order}, figtitle=curr_title,
-        fig_width=args.plot_size[0], fig_height=args.plot_size[1],
-        print_yaxis_range=args.print_yaxis_range, custom_y_range=custom_yaxis)
+        fig = interactive_scatter(
+            df, "Bundles", "Value", "Bundles", colormap=bundle_colors,
+            f_column="Measures", column_wrap=int(col_wrap),
+            custom_order={"Measures": custom_order}, figtitle=curr_title,
+            fig_width=args.plot_size[0], fig_height=args.plot_size[1],
+            print_yaxis_range=args.print_yaxis_range, custom_y_range=custom_yaxis)
 
-    save_figures_as(fig, args.out_dir, args.out_name,
+        outname = single_method + args.out_name
+
+        save_figures_as(fig, args.out_dir, outname,
                     save_as_png=args.save_as_png, dpi_scale=args.dpi_scale,
                     heigth_value=args.plot_size[1],
                     width_value=args.plot_size[0])

@@ -122,7 +122,8 @@ def main():
 
     if args.reorder_measure:
         df = check_agreement_with_dict(df, 'Measures', reorder_metrics,
-                                       rm_missing=args.filter_missing)
+                                       rm_missing=args.filter_missing, 
+                                       ignore_lenght=False)
         # Create a list to reorder measure
         new_order = generate_reorder_list(df, reorder_metrics, 'Bundles')
     else:

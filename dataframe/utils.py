@@ -18,31 +18,33 @@ def split_col(x, delimiter_arg='.'):
     parse_val = *cols.split(delimiter_arg), value
     return parse_val
 
+
 def get_row_name_from_col(df, col_name):
     return df[col_name].unique().tolist()
 
 
-def filter_rows_by_values(df, column_name, threshold_value, superior=False,
+def filter_rows_by_values(df, column_name, set_value, superior=False,
                           inferior=False, exclude=False):
     """
 
-    :param df:
-    :param column_name:
-    :param threshold_value:
-    :param superior:
-    :param inferior:
-    :param exclude:
-    :return:
+    df:                 Dataframe
+    column_name:        Name of column on which filter is applied.
+    set_value:          Value used to filter the column.
+    superior:           To select the value > to value.
+    inferior:           To select the value < to value.
+    exclude:            To exclude value equal to value.
+    
+    Return:             Filtered dataframe.
     """
-    if df[column_name].dtype != type(threshold_value):
-        raise ValueError('Warning: type of your threshold value not correspond'
-                         ' to the column dtype.')
+    if df[column_name].dtype != type(set_value):
+        raise ValueError('Type of your value not correspond to the column '
+                         'dtype.')
     if superior:
-        df = df[df[column_name] > threshold_value]
+        df = df[df[column_name] > set_value]
     elif inferior:
-        df = df[df[column_name] < threshold_value]
+        df = df[df[column_name] < set_value]
     elif exclude:
-        df = df[df[column_name] != threshold_value]
+        df = df[~df[column_name] != set_value]
 
     return df.reset_index(drop=True)
 
