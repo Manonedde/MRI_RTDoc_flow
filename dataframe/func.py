@@ -323,10 +323,22 @@ def get_subset_data(df, keep_columns=None, select_row_by_colum=None,
 def get_data_from(df, column_name, row_name):
     return df.loc[df[column_name].isin(row_name)]
 
+
 def split_df_by(df, col_arg):
-    split_df = []
+    """
+    Function to split large Dataframe into multiple smaller dataframe based
+    on unique argument on column.
+
+    df:         Dataframe.
+    col_arg:    Column name used to split dataframe.
+
+    Returns     Two lists of smaller dataframes and argument names
+                whose len() corresponds to the number of unique arguments
+                in the selected column.
+    """
+    split_df, split_name = [], []
     for unique_arg in df[col_arg].unique().tolist():
+        split_name.append(unique_arg)
         df_tmp = df.loc[df[col_arg] == unique_arg].reset_index(drop=True)
         split_df.append(df_tmp)
-
-    return split_df
+    return split_df, split_name

@@ -18,7 +18,7 @@ import pandas as pd
 import plotly.express as px
 
 from dataframe.func import get_multi_corr_map, get_corr_map
-from dataframe.utils import get_row_name_from_col, check_reorder_measure
+from dataframe.utils import get_row_name_from_col, check_agreement_with_dict
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from plots.parameters import new_order_measure
 from plots.utils import save_figures_as, generate_reorder_list
@@ -56,7 +56,7 @@ def _build_arg_parser():
                         help='Use to reorder measure for heatmap.\nBy '
                              'default measure are reordered as follow : \n'
                              'DTI, DTI-FW, HARDI, NODDI, MTI.')
-    frames.add_argument('--filter_measures', action='store_true',
+    frames.add_argument('--filter_missing', action='store_true',
                         help='Use to filter missing metrics when you reorder.')
     frames.add_argument('--apply_on_pearson',
                         choices=['None', 'square', 'absolute'],
@@ -121,8 +121,8 @@ def main():
         reorder_metrics = new_order_measure
 
     if args.reorder_measure:
-        df = check_reorder_measure(df, 'Measures', reorder_metrics,
-                                   rm_missing_metrics=args.filter_measures)
+        df = check_agreement_with_dict(df, 'Measures', reorder_metrics,
+                                       rm_missing=args.filter_missing)
         # Create a list to reorder measure
         new_order = generate_reorder_list(df, reorder_metrics, 'Bundles')
     else:

@@ -3,6 +3,7 @@
 
 import os
 
+
 def generate_reorder_list(df, ordered_argument_list, with_column):
     """
     Function to generate a list of new columns name list corresponding
@@ -17,14 +18,13 @@ def generate_reorder_list(df, ordered_argument_list, with_column):
 
     Return  List of column names corresponding to the argument list and
             unique value of column.
-    
+
     """
     reorder_columns_list = []
     for given_arg in ordered_argument_list:
         for unique_in_col in df[with_column].unique():
             reorder_columns_list.append(given_arg + '_' + unique_in_col)
-    return 
-
+    return
 
 
 def save_figures_as(fig, out_path, out_name, is_slider=False,
@@ -48,10 +48,10 @@ def save_figures_as(fig, out_path, out_name, is_slider=False,
     if save_as_png:
         if is_slider:
             print("With PNG you don't have access to the slider option.\n")
-        fig.write_image(os.path.join(out_path, out_name  + '.png'),
+        fig.write_image(os.path.join(out_path, out_name + '.png'),
                         scale=dpi_scale, heigth=heigth_value, width=width_value)
     else:
-        fig.write_html(os.path.join(out_path, out_name  + '.html'))
+        fig.write_html(os.path.join(out_path, out_name + '.html'))
 
 
 def check_df_for_distribution(df, split_filter=None):
@@ -74,8 +74,8 @@ def check_df_for_distribution(df, split_filter=None):
 
     if len(df['Method'].unique().tolist()) > 1 and split_filter is None:
         raise ValueError('Multiple method categories are found in csv files.\n'
-                         'Please provide a csv file containing single Method or'
-                         ' use --specific_method or --split_by options.')
+                         'Please provide a csv file containing single Method'
+                         'or use --specific_method or --split_by options.')
 
     if len(df['Statistics'].unique().tolist()) > 1:
         raise ValueError('Multiple statistics are found in csv files.\n '
@@ -83,19 +83,59 @@ def check_df_for_distribution(df, split_filter=None):
                          ' or use --specific_stats options.')
 
 
-def check_agreement_with_dict(df, col_to_check, dict_parameters,
-                              multiple_args=None, use_data=False):
-    if multiple_args:
-        for unique_arg in df[col_to_check].unique().tolist():
-            if unique_arg not in dict_parameters:
-                raise ValueError("No match colors is found for ", unique_arg,
-                                 ".Please use --custom_colors option to "
-                                 "provide specific colors. Or change "
-                                 "--rbx_version option.")
-    else:
-        if df[col_to_check].unique().tolist()[0] not in dict_parameters:
-            if use_data is None:
-                raise ValueError('No match is found in default parameter.\n '
-                                 'Please use --use_data option or use "
-                                 '--custom_order and --custom_yaxis options '
-                                 'to provide specific information.')
+def check_item_in_dict(df, check_column, dict_parameters, use_data=False):
+    if df[check_column].unique().tolist()[0] not in dict_parameters:
+        if use_data is None:
+            raise ValueError('No match is found in default parameter.\n '
+                             'Please use --use_data option or use '
+                             '--custom_* options to provide specific '
+                             'information.')
+
+
+def check_agreement_with_dict(df, check_column, input_parameters,
+                              rm_missing=False, colorscale=False):
+    """
+    Checks whether there is a match between a dictionary or parameter list and a
+    list of the unique elements of the selected column in the database. 
+    To remove items not listed in the default parameters, use the rm_missing
+    option, otherwise use the custom* options. 
+    If the check concerns bundle color, set the colorscale argument to True. 
+
+    df:                     DataFrame
+    check_column:           Column name to check.
+    input_parameters:       List or dict of items/parameters
+    rm_missing:             Boolean. If True the missing items in dataframe
+                            are removed.
+
+    Return                  Error message /or
+                            The Dataframe without missing items if
+                            rm_missing is True.
+    """
+    missing_items = []
+    for curr_item in df[check_column].unique():
+        if curr_item not in input_parameters:
+            missing_items.append(curr_item)
+
+    if not missing_items:
+        if (len(input_parameters) != len(df[check_column].unique().tolist())
+                and colorscale is False):
+            raise ValueError('No missing items are detected, but the number'
+                             ' of default items and that of the dataframe'
+                             ' do not match.\nUse --custom_* options to parse'
+                             ' a custom list. For bundle colors put colorscale'
+                             'at True.')
+        else:
+            return df
+
+    if len(missing_items) != 0:
+        if rm_missing:
+            print("With the --filter_missing option the following elements"
+                  " are removed:\n", missing_items)
+            return df.loc[~(df[check_column].isin(
+                missing_items))].reset_index(drop=True)
+        else:
+            raise ValueError('The listed items in dataframe do not match'
+                             ' with the default item list:\n', missing_items,
+                             '\nUse --custom_* options to parse a custom'
+                             ' list or --filter_missing to remove missing'
+                             ' items.')

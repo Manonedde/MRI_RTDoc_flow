@@ -18,10 +18,11 @@ import pandas as pd
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from dataframe.parameters import scaling_metrics
+from dataframe.func import split_df_by
 from plots.parameters import (average_parameters_dict, order_plot_dict,
                               bundle_dict_color_v1, bundle_dict_color_v10)
 from plots.utils import (check_df_for_distribution, check_agreement_with_dict,
-                         save_figures_as, split_df_by)
+                         save_figures_as)
 from plots.interactive_func import interactive_scatter
 
 
@@ -43,7 +44,13 @@ def _build_arg_parser():
                    help='Use to select a specific statistic. '
                         '[%(default)s]')
     p.add_argument('--specific_method',
-                   help='Use to select a specific method. ')
+                   help='String. Use to select a specific method. '
+                        'Could be DTI, FW, NODDI, etc.')
+    p.add_argument('--split_by',
+                   help='Column name. Use to plot distribution on each unique'
+                        ' argument in slected column. ')
+    p.add_argument('--filter_missing', action='store_true',
+                   help='Use to filter missing metrics when you reorder.')
 
     scatter = p.add_argument_group(title='Scatter plot options')
     scatter.add_argument('--plot_size', nargs=2, type=int,
@@ -90,13 +97,11 @@ def main():
     df = pd.read_csv(args.in_csv)
     if 'Unnamed: 0' in df.columns.tolist():
         df.drop('Unnamed: 0', axis=1, inplace=True)
-    df = df[df['Statistics'] == args.use_stats]
-    df = df[df['rbx_version'] == args.rbx_version]
+    df = df.loc[(df.Statistics == args.use_stats) &
+                (df.rbx_version == args.rbx_version)].reset_index(drop=True)
 
     if args.specific_method is not None:
-        df = df[df['Method'] == args.specific_method]
-
-    df = df.reset_index(drop=True)
+        df = df[df['Method'] == args.specific_method].reset_index(drop=True)
 
     if args.custom_colors is not None:
         bundle_colors = args.custom_colors
@@ -106,22 +111,21 @@ def main():
         bundle_colors = bundle_dict_color_v1
 
     # check Dataframe shape before plot
-    check_agreement_with_dict(df, 'Bundles', bundle_colors, multiple_args=True,
-                              use_data=args.use_data)
     check_df_for_distribution(df, split_filter=args.split_by)
-    check_agreement_with_dict(df, 'Method', order_plot_dict,
-                              use_data=args.use_data, 
-                              multiple_args=args.split_by)
+    df = check_agreement_with_dict(df, 'Bundles', bundle_colors,
+                                   colorscale=True, 
+                                   rm_missing=args.filter_missing)
+    df = check_agreement_with_dict(df, 'Method', order_plot_dict,
+                                   rm_missing=args.filter_missing)
 
     if args.split_by:
-        multi_df = split_df_by(df, args.split_by)
-        for frame in multi_df:
-            curr_method = frame[args.split_by].unique().tolist()[0]
+        multi_df, df_names = split_df_by(df, args.split_by)
+        for frame, curr_method in zip(multi_df, df_names):
             curr_title = "Distribution of " + curr_method + " measurements"
 
             if args.out_name is None:
                 args.out_name = curr_method + '_measurement_distribution'
-            
+
             if args.custom_order and args.custom_y is not None:
                 custom_order = args.custom_order[curr_method]
                 custom_yaxis = args.custom_y
@@ -136,7 +140,7 @@ def main():
                 for metric in custom_order:
                     if metric in scaling_metrics:
                         custom_yaxis[metric][1] *= args.apply_factor
-            
+
                 col_wrap = len(frame['Measures'].unique().tolist()) / 2
 
             fig = interactive_scatter(
@@ -149,10 +153,10 @@ def main():
 
             save_figures_as(fig, args.out_dir, args.out_name,
                             save_as_png=args.save_as_png,
-                            dpi_scale=args.dpi_scale, 
-                            heigth_value=args.plot_size[1], 
+                            dpi_scale=args.dpi_scale,
+                            heigth_value=args.plot_size[1],
                             width_value=args.plot_size[0])
-    
+
     else:
 
         curr_method = df['Method'].unique().tolist()[0]
@@ -186,8 +190,8 @@ def main():
         print_yaxis_range=args.print_yaxis_range, custom_y_range=custom_yaxis)
 
     save_figures_as(fig, args.out_dir, args.out_name,
-                    save_as_png=args.save_as_png, dpi_scale=args.dpi_scale, 
-                    heigth_value=args.plot_size[1], 
+                    save_as_png=args.save_as_png, dpi_scale=args.dpi_scale,
+                    heigth_value=args.plot_size[1],
                     width_value=args.plot_size[0])
 
 
