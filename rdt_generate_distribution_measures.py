@@ -3,8 +3,12 @@
 
 """
 Script to plot distribution of data included in the input CSV.
-CSV file could be the output of rdt_prepare_csv_for_figures.py
-with --split_by_method option.
+CSV file must be the output of rdt_prepare_csv*.py
+with --split_by_method option if you're not filter your dataframe.
+
+By default, MRI measurement ranges are defined in the parameter file. 
+Use the --apply_factor option if you have applied a factor to individual 
+measurements, to adapt the ranges from the parameter file.
 
 rdt_generate_mean_measures_across_bundles_plot.py dti.csv
 """
@@ -13,6 +17,7 @@ import argparse
 import pandas as pd
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
+from dataframe.parameters import scaling_metrics
 from plots.parameters import (average_parameters_dict, order_plot_dict,
                               bundle_dict_color_v1, bundle_dict_color_v10)
 from plots.utils import (check_df_for_distribution, check_agreement_with_dict,
@@ -55,10 +60,10 @@ def _build_arg_parser():
                          help='Use data to set x and y axis range.')
     scatter.add_argument('--custom_colors',
                          help='Dictionary containing the bundle names and '
-                         'colors. '
-                              'associated in HEX format.')
-    scatter.add_argument('--apply_factor', action='store_true',
-                         help='Use if you apply factor on some metrics. ')
+                         'colors associated in HEX format.')
+    scatter.add_argument('--apply_factor', type=int,
+                         help='Factor applied on MRI measure for plot. '
+                              ' [%(default)s].')
     scatter.add_argument('--print_yaxis_range', action='store_true',
                          help='Use to check/update the y axis range. ')
 
@@ -94,11 +99,6 @@ def main():
 
     df = df.reset_index(drop=True)
 
-    # check Dataframe shape before plot
-    check_df_for_distribution(df, specific_filter=args.specific_method)
-    check_agreement_with_dict(df, 'Method', order_plot_dict,
-                              use_data=args.use_data)
-
     if args.custom_colors is not None:
         bundle_colors = args.custom_colors
     elif args.rbx_version == 'v10':
@@ -107,6 +107,11 @@ def main():
         bundle_colors = bundle_dict_color_v1
 
     check_agreement_with_dict(df, 'Bundles', bundle_colors, multiple_args=True,
+                              use_data=args.use_data)
+
+    # check Dataframe shape before plot
+    check_df_for_distribution(df, specific_filter=args.specific_method)
+    check_agreement_with_dict(df, 'Method', order_plot_dict,
                               use_data=args.use_data)
 
     curr_method = df['Method'].unique().tolist()[0]
@@ -126,7 +131,9 @@ def main():
         custom_yaxis = average_parameters_dict
 
     if args.apply_factor:
-        custom_yaxis[1][1] = custom_yaxis[1][1]*10
+        for metric in custom_order:
+            if metric in scaling_metrics:
+                custom_yaxis[metric][1] *= args.apply_factor
 
     col_wrap = len(df['Measures'].unique().tolist()) / 2
 
@@ -138,7 +145,9 @@ def main():
         print_yaxis_range=args.print_yaxis_range, custom_y_range=custom_yaxis)
 
     save_figures_as(fig, args.out_dir, args.out_name,
-                    save_as_png=args.save_as_png)
+                    save_as_png=args.save_as_png, dpi_scale=args.dpi_scale, 
+                    heigth_value=args.plot_size[1], 
+                    width_value=args.plot_size[0])
 
 
 if __name__ == '__main__':
