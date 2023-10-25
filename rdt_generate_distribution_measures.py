@@ -46,13 +46,16 @@ def _build_arg_parser():
                          default=(1100, 800),
                          help='Width and Height of Scatter Plot. ')
     scatter.add_argument('--custom_order',
-                         help='Use dictionary provided to set order of metrics plot.')
+                         help='Use dictionary provided to set order of '
+                         'metrics plot.')
     scatter.add_argument('--custom_y',
-                         help='Use dictionary provided to set x and y axis range by measures.')
+                         help='Use dictionary provided to set x and y axis '
+                         'range by measures.')
     scatter.add_argument('--use_data', action='store_true',
                          help='Use data to set x and y axis range.')
     scatter.add_argument('--custom_colors',
-                         help='Dictionary containing the bundle names and colors '
+                         help='Dictionary containing the bundle names and '
+                         'colors. '
                               'associated in HEX format.')
     scatter.add_argument('--apply_factor', action='store_true',
                          help='Use if you apply factor on some metrics. ')
@@ -92,7 +95,7 @@ def main():
     df = df.reset_index(drop=True)
 
     # check Dataframe shape before plot
-    check_df_for_distribution(df,specific_filter=args.specific_method)
+    check_df_for_distribution(df, specific_filter=args.specific_method)
     check_agreement_with_dict(df, 'Method', order_plot_dict,
                               use_data=args.use_data)
 
@@ -102,10 +105,10 @@ def main():
         bundle_colors = bundle_dict_color_v10
     else:
         bundle_colors = bundle_dict_color_v1
-    
+
     check_agreement_with_dict(df, 'Bundles', bundle_colors, multiple_args=True,
                               use_data=args.use_data)
-    
+
     curr_method = df['Method'].unique().tolist()[0]
     curr_title = "Distribution of " + curr_method + " measurements"
 
@@ -121,8 +124,6 @@ def main():
     else:
         custom_order = order_plot_dict[curr_method]
         custom_yaxis = average_parameters_dict
-    
-    print(custom_yaxis)
 
     if args.apply_factor:
         custom_yaxis[1][1] = custom_yaxis[1][1]*10
@@ -130,11 +131,14 @@ def main():
     col_wrap = len(df['Measures'].unique().tolist()) / 2
 
     fig = interactive_scatter(
-                df, "Bundles", "Value", "Bundles", colormap=bundle_colors, f_column="Measures", column_wrap=int(col_wrap), custom_order={"Measures": custom_order}, figtitle=curr_title, 
-                fig_width=args.plot_size[0], fig_height=args.plot_size[1],print_yaxis_range=args.print_yaxis_range,custom_y_range=custom_yaxis)
-    
-    save_figures_as(fig, args.out_dir, args.out_name, 
-                            save_as_png=args.save_as_png)
+        df, "Bundles", "Value", "Bundles", colormap=bundle_colors,
+        f_column="Measures", column_wrap=int(col_wrap),
+        custom_order={"Measures": custom_order}, figtitle=curr_title,
+        fig_width=args.plot_size[0], fig_height=args.plot_size[1],
+        print_yaxis_range=args.print_yaxis_range, custom_y_range=custom_yaxis)
+
+    save_figures_as(fig, args.out_dir, args.out_name,
+                    save_as_png=args.save_as_png)
 
 
 if __name__ == '__main__':

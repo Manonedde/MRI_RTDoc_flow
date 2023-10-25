@@ -29,32 +29,34 @@ import pandas as pd
 import numpy as np
 
 from dataframe.utils import column_dict_name
-from dataframe.func import split_col, reshape_to_wide_format, convert_lesion_data
+from dataframe.func import (split_col, reshape_to_wide_format,
+                            convert_lesion_data)
 from scilpy.io.utils import (add_overwrite_arg,
                              assert_inputs_exist, assert_outputs_exist)
+
 
 def _build_arg_parser():
     p = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                 description=__doc__)
 
-    p.add_argument('in_json', nargs = '+',
-                   help = 'File(s) containing the json stats (.json).')
+    p.add_argument('in_json', nargs='+',
+                   help='File(s) containing the json stats (.json).')
 
     p.add_argument('--out_csv',
-                   help = 'Output CSV filename for the stats (.csv).')
+                   help='Output CSV filename for the stats (.csv).')
     p.add_argument('--out_dir',
-                   help = 'Output directory to save CSV. \n'
-                          'By default is current folder.')
-    p.add_argument('--wide', action = 'store_true',
-                   help = 'Option to save in wide format the statistic '
-                          'measurements. By default is long format.')
-    p.add_argument('--longitudinal', action = 'store_true',
-                   help = 'Option to save in wide format the statistic '
-                          'measurements. By default is long format.')
-    p.add_argument('--save_merge_df', action = 'store_true',
-                   help = 'Save all jsons into a single dataframe in long \n'
-                          'format. By default, each json is saved in an '
-                          'independent csv. ')
+                   help='Output directory to save CSV. \n'
+                   'By default is current folder.')
+    p.add_argument('--wide', action='store_true',
+                   help='Option to save in wide format the statistic '
+                   'measurements. By default is long format.')
+    p.add_argument('--longitudinal', action='store_true',
+                   help='Option to save in wide format the statistic '
+                   'measurements. By default is long format.')
+    p.add_argument('--save_merge_df', action='store_true',
+                   help='Save all jsons into a single dataframe in long \n'
+                   'format. By default, each json is saved in an '
+                   'independent csv. ')
 
     add_overwrite_arg(p)
 
@@ -100,7 +102,7 @@ def main():
             long_columns, wide_columns = column_dict_name[key_columns]
             # Store json data in dataframe
             values = [split_col(x) for x in df[["index", 0]].values]
-            long_df = pd.DataFrame(columns = long_columns, data = values)
+            long_df = pd.DataFrame(columns=long_columns, data=values)
 
         if args.save_merge_df:
             tmp_df.append(long_df)
@@ -110,8 +112,8 @@ def main():
                                         args.out_csv + '_long.csv',
                                         index=False))
             long_df.to_csv(os.path.join(args.out_dir,
-                            args.out_csv + '_wide.csv'),
-                            index=False)
+                                        args.out_csv + '_wide.csv'),
+                           index=False)
         # Reshape long to wide dataframe
         if args.wide:
             if 'sats' in long_df.column.tolist():
@@ -119,13 +121,14 @@ def main():
                 # Save dataframe
             long_df.to_csv(os.path.join(args.out_dir,
                                         args.out_csv + '_wide.csv'),
-                                        index=False)
+                           index=False)
 
     if args.save_merge_df:
         merged_long_df = pd.concat(tmp_df[:], ignore_index=True)
         merged_long_df = merged_long_df.reset_index(drop=True)
         merged_long_df.to_csv(os.path.join(args.out_dir,
                                            'merged_csv_long.csv'), index=False)
+
 
 if __name__ == '__main__':
     main()

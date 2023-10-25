@@ -33,15 +33,15 @@ def _build_arg_parser():
     p.add_argument('in_csv',
                    help='CSV MRI data.')
 
-    p.add_argument('--out_prefix',
+    p.add_argument('--out_prefix', default='mean_',
                    help='Output filename to save plots.')
     p.add_argument('--out_dir',
                    help='Output directory to save plots.')
     p.add_argument('--colormap',
-                    help='Dictionnary of colormap to use for each metric.'),
+                   help='Dictionnary of colormap to use for each metric.'),
     p.add_argument('--merge_lr', action='store_true',
                    help='Averaged left and right bundle values (mean). ')
-    p.add_argument('--specific_stats',  default='mean',
+    p.add_argument('--specific_stats', default='mean',
                    help='Use to select a specific statistic. '
                         '[%(default)s]')
     p.add_argument('--split_visu', action='store_true',
@@ -53,18 +53,18 @@ def _build_arg_parser():
 
 
 bundle_colors = {"AF": "#368a6b", "CC_7": "#047b3c", "CC_6": "#00ffea",
-                 "CC_5": "#0544c4","CC_4":"#fa7e08", "CC_3": "#82830e",
-                 "CC_2b": "#bcbb73", "CC_2a": "#fe8ad5", "CC_1":"#ff4707",
-                 "CG": "#ffff00", "CST": "#1b0385","IFOF": "#f9c306", "ILF": "#11d473",
-                 "SLF_1": "#d9cef5","SLF_2": "#9a82d7", "SLF_3": "#615481",
-                 "OR": "#7ab5af", "UF": "#7541f8", "MCP":"#C34095",
-                 "ICP":"#CD5C5C"}
+                 "CC_5": "#0544c4", "CC_4": "#fa7e08", "CC_3": "#82830e",
+                 "CC_2b": "#bcbb73", "CC_2a": "#fe8ad5", "CC_1": "#ff4707",
+                 "CG": "#ffff00", "CST": "#1b0385", "IFOF": "#f9c306",
+                 "ILF": "#11d473", "SLF_1": "#d9cef5", "SLF_2": "#9a82d7",
+                 "SLF_3": "#615481", "OR": "#7ab5af", "UF": "#7541f8",
+                 "MCP": "#C34095", "ICP": "#CD5C5C"}
 
 # Could be optimize
 def set_x_position(df_ref, df_adapt, start_point=1, step_point=0.8,
                    step_cat=2.5):
     """
-    Redefine the position of the bundles on the x axis in order to
+    Redefine the position of the bundles on the x axis to
     display the 2 conditions side by side.
 
     Parameters
@@ -80,45 +80,40 @@ def set_x_position(df_ref, df_adapt, start_point=1, step_point=0.8,
     the df_ref and df_adapt dataframes with a column corresponding to the
     new position on the x axis for each bundle.
     """
-    j=start_point
-
+    j = start_point
     for i in df_ref['Bundles'].unique():
         tmp = df_ref.loc[df_ref.Bundles == i]
         tmp['x_psotion'] = j
         df_ref.loc[df_ref.Bundles == i, 'x_psotion'] = tmp['x_psotion']
         tmp['x_psotion'] = j + step_point
-        df_adapt.loc[df_adapt.Bundles == i, 'x_psotion'] = tmp['x_psotion'].values
-        j+=step_cat
+        df_adapt.loc[df_adapt.Bundles == i,
+                     'x_psotion'] = tmp['x_psotion'].values
+        j += step_cat
 
     return df_ref, df_adapt
-
 
 
 def main():
     parser = _build_arg_parser()
     args = parser.parse_args()
-
     assert_inputs_exist(parser, args.in_csv)
 
     if args.out_dir is None:
         args.out_dir = './'
 
-    if args.out_prefix is None:
-        args.out_prefix = 'mean_'
-
     df = pd.read_csv(args.in_csv)
     df.drop('Unnamed: 0', axis=1, inplace=True)
-
     df = df[df['Statistics'] == args.specific_stats]
 
     if 'Section' in df.columns.tolist():
-        df=df[df['Section'].isnull()]
+        df = df[df['Section'].isnull()]
         df.drop('Section', axis=1, inplace=True)
 
     if args.merge_lr:
-        df['Bundles'] = df['Bundles'].replace('_L','', regex=True)
-        df['Bundles'] = df['Bundles'].replace('_R','', regex=True)
-        df=df.groupby(['Sid','Bundles','Statistics','Measures','Correction'])['Value'].mean().reset_index()
+        df['Bundles'] = df['Bundles'].replace('_L', '', regex=True)
+        df['Bundles'] = df['Bundles'].replace('_R', '', regex=True)
+        df = df.groupby(['Sid', 'Bundles', 'Statistics', 'Measures', 'Correction'])[
+            'Value'].mean().reset_index()
 
     df = df[~(df['Bundles'] == 'CR')]
     df = df.reset_index(drop=True)
@@ -126,18 +121,18 @@ def main():
     # Set seaborn display settings
     sns.set_style("whitegrid")
     sns.set_context("paper",
-                    rc={"font.size":15,"axes.titlesize":15,
-                        "axes.linewidth":0.5,"axes.edgecolor":'k',
-                        "axes.labelsize":15, "xtick.labelsize":14,
-                        "ytick.labelsize":15, "axes.labelpad":6,
-                        "axes.titlepad":3,"legend.fontsize":10,
-                        "legend.borderaxespad":3,"legend.columnspacing":3,
-                        "figure.dpi":200, "legend.title_fontsize":12,
+                    rc={"font.size": 15, "axes.titlesize": 15,
+                        "axes.linewidth": 0.5, "axes.edgecolor": 'k',
+                        "axes.labelsize": 15, "xtick.labelsize": 14,
+                        "ytick.labelsize": 15, "axes.labelpad": 6,
+                        "axes.titlepad": 3, "legend.fontsize": 10,
+                        "legend.borderaxespad": 3, "legend.columnspacing": 3,
+                        "figure.dpi": 200, "legend.title_fontsize": 12,
                         'legend.frameon': False, 'grid.linewidth': 0})
 
     # Loop to generate the graphs of each MRI measurement
     for metric in df['Measures'].unique():
-        curr_df=df[df['Measures'] == metric]
+        curr_df = df[df['Measures'] == metric]
 
         curr_title = "Mean " + metric + " across bundles"
 
@@ -147,44 +142,43 @@ def main():
             col_map = bundle_colors
 
         if args.split_visu:
-
             # To display the two conditions in two separate graphs
             kws = {"s": 70, "facecolor": "none", "linewidth": 1.5}
-            p = sns.relplot(data = curr_df, x ='Bundles',y ='Value',
-                            hue = 'Bundles', ci = None,
-                            col = 'Correction', col_order=['original','corrected'],
-                            legend = True,height = 6, aspect = 1.4,
-                            facet_kws={'sharey': True,'sharex': True},
+            p = sns.relplot(data=curr_df, x='Bundles', y='Value',
+                            hue='Bundles', ci=None, col='Correction', 
+                            col_order=['original', 'corrected'],
+                            legend=True, height=6, aspect=1.4,
+                            facet_kws={'sharey': True, 'sharex': True},
                             palette=col_map, markers=["v", "o"],
-                            style="Correction", **kws, )
+                            style="Correction", **kws,)
             p.set_titles('{col_name}')
             p.set_xticklabels(rotation=40)
             p.set(ylabel=metric)
             # remove Legend title
-            #p._legend.texts[0].set_text("")
+            # p._legend.texts[0].set_text("")
 
         else:
 
             # To display the two conditions side by side
             # Reorganization of the dataframe to set the new
             # positions on the x axis
-            curr_df = curr_df.sort_values(by = ['Bundles','Correction'])
+            curr_df = curr_df.sort_values(by=['Bundles', 'Correction'])
             curr_df['x_psotion'] = 1
             curr_df = curr_df.reset_index(drop=True)
             curr_df_original = curr_df[curr_df['Correction'] == 'original']
             curr_df_corrected = curr_df[curr_df['Correction'] == 'corrected']
 
-            curr_df_original, curr_df_corrected = set_x_position(curr_df_original,
-                                                                 curr_df_corrected)
+            curr_df_original, curr_df_corrected = set_x_position(
+                                        curr_df_original, curr_df_corrected)
 
             # Create fig and ax to add scatterplot
-            fig, ax = plt.subplots(figsize=(15,8))
+            fig, ax = plt.subplots(figsize=(15, 8))
 
             # Add scatter corresponding to first dataframe
             kws = {"s": 55, "facecolor": "none", "linewidth": 0}
-            g1=sns.scatterplot(ax=ax, data=curr_df_original, x='x_psotion',
-                               y='Value', hue='Bundles', marker="o",
-                               edgecolor="none", palette=col_map, **kws, )
+            g1 = sns.scatterplot(ax=ax, data=curr_df_original, x='x_psotion',
+                                 y='Value', hue='Bundles', marker="o",
+                                 edgecolor="none", palette=col_map, **kws, )
             g1.tick_params(right=False)
             ax.spines['right'].set_visible(False)
             ax.spines['top'].set_visible(False)
@@ -193,10 +187,10 @@ def main():
             # Duplicate ax to plot the second dataframe
             ax2 = ax.twinx()
             kws = {"s": 55, "facecolor": "none", "linewidth": 0}
-            g2=sns.scatterplot(ax=ax, data=curr_df_corrected, x='x_psotion',
-                               y='Value', hue='Bundles', marker="v",
-                               edgecolor="none", palette=col_map,
-                               legend=None, **kws, )
+            g2 = sns.scatterplot(ax=ax, data=curr_df_corrected, x='x_psotion',
+                                 y='Value', hue='Bundles', marker="v",
+                                 edgecolor="none", palette=col_map,
+                                 legend=None, **kws, )
             ax2.spines['right'].set_visible(False)
             ax2.spines['top'].set_visible(False)
             plt.setp(ax2.get_yticklabels(), visible=False)
@@ -211,15 +205,15 @@ def main():
             g2.set_xticklabels(new_labels, size=13, rotation=40)
 
             # Update legend box correspoding to bundles
-            g_ax=g1.axes
+            g_ax = g1.axes
             handles, labels = g_ax.get_legend_handles_labels()
             ax.legend(handles, labels, title="Bundles")
             sns.move_legend(g1, "right", bbox_to_anchor=(1.15, 0.5))
 
         # Save plot
-        plt.savefig(os.path.join(args.out_dir, args.out_prefix + metric + '.png'),
+        plt.savefig(os.path.join(args.out_dir, args.out_prefix + 
+                                 metric + '.png'),
                     dpi=200, bbox_inches='tight')
-
 
 
 if __name__ == '__main__':

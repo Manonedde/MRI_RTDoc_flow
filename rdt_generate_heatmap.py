@@ -14,7 +14,6 @@ Warning : Require kaleido to save in png.
 
 import argparse
 
-import os
 import pandas as pd
 import plotly.express as px
 
@@ -136,25 +135,27 @@ def main():
     if args.split_by:
         split_arg_names = get_row_name_from_col(df, args.split_by)
         corr_map, colorbar_title = (get_multi_corr_map(
-                        df, args.split_by, 'Sid', 'Measures_Bundles', 'Value', reorder_col=new_order, longitudinal=args.longitudinal,
-                        post_pearson=args.apply_on_pearson))
+            df, args.split_by, 'Sid', 'Measures_Bundles', 'Value',
+            reorder_col=new_order, longitudinal=args.longitudinal,
+            post_pearson=args.apply_on_pearson))
 
         for corr_name, corr in zip(split_arg_names, corr_map):
             if args.ylabel is None:
                 args.ylabel = 'Metrics of ' + args.split_by + ' ' + str(
-                                corr_name)
+                    corr_name)
             fig = interactive_heatmap(
-                        corr, title=args.title, title_size=25, tick_angle=90,
-                        colbar_title=colorbar_title, tick_font_size=12,
-                        colormap=px.colors.sequential.YlGnBu, 
-                        r_min=args.r_range[0], r_max=args.r_range[1], y_label=args.ylabel,fig_width=args.plot_size[0], 
-                        fig_height=args.plot_size[1])
+                corr, title=args.title, title_size=25, tick_angle=90,
+                colbar_title=colorbar_title, tick_font_size=12,
+                colormap=px.colors.sequential.YlGnBu,
+                r_min=args.r_range[0], r_max=args.r_range[1],
+                y_label=args.ylabel, fig_width=args.plot_size[0],
+                fig_height=args.plot_size[1])
 
             # Save figure
             outname = args.out_name + '_' + args.split_by + '_' + str(
                 corr_name)
-            save_figures_as(fig, args.out_dir, outname, 
-                            is_slider=args.use_as_slider, 
+            save_figures_as(fig, args.out_dir, outname,
+                            is_slider=args.use_as_slider,
                             save_as_png=args.save_as_png)
 
     # Heatmap with slider
@@ -165,7 +166,7 @@ def main():
             reorder_col=new_order,
             post_pearson=args.apply_on_pearson,
             longitudinal=args.longitudinal)
-        
+
         # Generate figure
         fig = interactive_heatmap_with_slider(
             corr_map, title=args.title, colbar_title=colorbar_title,
@@ -180,21 +181,25 @@ def main():
     else:
         # Heatmap without slider (i.e. averaged values)
         corr_map, colorbar_title = get_corr_map(
-                                    df, 'Sid', 'Measures_Bundles', 'Value',
-                                    reorder_col=new_order,
-                                    post_pearson=args.apply_on_pearson)
+            df, 'Sid', 'Measures_Bundles', 'Value',
+            reorder_col=new_order,
+            post_pearson=args.apply_on_pearson)
         # Generate figure
         fig = interactive_heatmap(
-                    corr_map, title=args.title, title_size=25, tick_angle=90,
-                    colbar_title=colorbar_title, colormap=px.colors.sequential.YlGnBu, x_label=args.xlabel, y_label=args.ylabel, r_min=args.r_range[0], r_max=args.r_range[1],tick_font_size=12, fig_width=args.plot_size[0],fig_height=args.plot_size[1])
+            corr_map, title=args.title, title_size=25, tick_angle=90,
+            colbar_title=colorbar_title, colormap=px.colors.sequential.YlGnBu,
+            x_label=args.xlabel, y_label=args.ylabel, r_min=args.r_range[0],
+            r_max=args.r_range[1], tick_font_size=12,
+            fig_width=args.plot_size[0], fig_height=args.plot_size[1])
 
     # Save figure
     if args.split_by is not None:
         pass
     else:
-        save_figures_as(fig, args.out_dir, args.out_name, 
-                        is_slider=args.use_as_slider, 
+        save_figures_as(fig, args.out_dir, args.out_name,
+                        is_slider=args.use_as_slider,
                         save_as_png=args.save_as_png)
+
 
 if __name__ == '__main__':
     main()
