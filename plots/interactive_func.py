@@ -15,7 +15,7 @@ def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
                              show_legend=False, custom_order=None, font_size=15,
                              fig_width=900, fig_height=700,line_width=1,
                              x_label='', y_label='',custom_y_range=False,
-                             print_yaxis_range=False):
+                             print_yaxis_range=False, kwgs={}):
     """
     Generate interactive distribution plot according to category (y_column).
 
@@ -38,6 +38,9 @@ def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
     title_size :        Set the title font size
     fig_width :         Set the width of figure
     fig_height :        Set the height of figure
+    kwgs:               Dictionary. Uses to parse options to plotly function
+                        that are not listed in interactive function. refers
+                        to plotly.express page.
 
     Return plotly figure structure that could be save using write_html function.
     """
@@ -48,7 +51,7 @@ def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
                      facet_row_spacing=row_spacing,
                      height=fig_height, width=fig_width,
                      title=figtitle, color_discrete_map=colormap,
-                     category_orders=custom_order)
+                     category_orders=custom_order, **kwgs)
 
     fig.for_each_annotation(lambda anot: anot.update(
                                                 text=anot.text.split("=")[-1]))

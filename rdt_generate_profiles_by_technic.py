@@ -107,10 +107,11 @@ def main():
                           yaxis4 = dict(range = [0,1.5]),
                           yaxis2 = dict(range = [0,2]))
 
-    if args.save_as_png:
-        fig.write_image(os.path.join(args.out_dir, args.out_name + '.png'))
-    else:
-        fig.write_html(os.path.join(args.out_dir, args.out_name + '.html'))
+    # Save figure
+    save_figures_as(fig, args.out_dir, args.out_name, 
+                    is_slider=args.use_as_slider,
+                    save_as_png=args.save_as_png)
+
 
 if __name__ == '__main__':
     main()
