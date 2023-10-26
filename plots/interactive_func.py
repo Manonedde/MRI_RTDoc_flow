@@ -170,3 +170,61 @@ def interactive_correlation(df, x_column, y_column, color_column, trend_line='ol
                      linecolor='black')
 
     return fig
+
+
+def generate_args_for_correlation(df, x, y, trend='ols',        
+                                       scope='overall', colorline='black'):
+    """
+    Function to generate arguments required to to buttons function of layout.Updatemenu().
+
+    df:
+    x:
+    y:
+    trend:
+    scope:
+    colorline:
+
+    Return  Dictionary which fit to buttons function of layout.Updatemenu().
+    """
+    return {"x":[df[x], px.scatter(x=df[x], y=df[y], trendline=trend).data[1].  x], "y":[df[y], px.scatter(x=df[x], y=df[y], trendline=trend).data[1].y],"trendline":[trend], "trendline_scope":[scope],"trendline_color_override":[colorline]}
+
+
+def multi_correlation_with_menu(df, column_list=None, show_only=False):
+    """
+    Function to plot correlation between two measures with regression line and using a dropdown menu.
+    df:
+    column_list:
+
+    Return      Figure structure that could be saved as html.
+    """
+    if column_list is None:
+        column_list = df.columns.tolist()
+
+    # Initialize the first scatter plot
+    fig = go.Figure()
+    figtitle = column_list[0] + ' vs ' + column_list[1]
+    fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],          trendline="ols", trendline_scope="overall", title=figtitle, trendline_color_override="black")
+    # Generate the update menu args for each combinaison of columns
+    button_menu_list = []
+    for xaxis in column_list:
+        for yaxis in column_list:
+            if xaxis != yaxis:
+                curr_button_dict = dict(
+                            label= xaxis + ' vs ' + yaxis, 
+                            method="update", 
+                            args=[
+                                generate_args_for_correlation(
+                                    df, xaxis, yaxis, strend='ols', scope='overall'),
+                                {"title": xaxis + ' vs ' + yaxis,
+                                 'xaxis': {'title': xaxis}, 
+                                 'yaxis': {'title': yaxis}}
+                                ])
+                button_menu_list.append(curr_button_dict)
+
+    # Update figure layout
+    fig.update_layout(updatemenus=[go.layout.Updatemenu(type="dropdown",buttons=button_menu_list)], template="plotly_white",)
+    
+    if show_only:
+        fig.show()
+    else:
+        return fig

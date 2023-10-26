@@ -10,7 +10,6 @@ import os
 import pandas as pd
 import numpy as np
 
-from scipy.ndimage import label
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from plot_fixed_func import scatter_with_regression_line
 
