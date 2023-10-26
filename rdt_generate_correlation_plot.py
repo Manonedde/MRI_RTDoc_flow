@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Script to identify each lesion with individual label.
+Script to plot correlation plot with linear trend.
 """
 
 import argparse
@@ -60,7 +60,7 @@ def main():
     for idx, bundle in enumerate(bundle_list_title):
         curr_bundle_df = df[df.Bundles == bundle]
         curr_bundle_df = curr_bundle_df.pivot(
-                            index='Sid', columns='Measures', values='Value')
+                             index='Sid', columns='Measures', values='Value')
         metric_list = curr_bundle_df.columns.tolist()
 
         for x_axis_name in metric_list:
@@ -70,17 +70,17 @@ def main():
                     y = curr_bundle_df[y_axis_name]
                     # pearson correlation
                     line = get_regression_line_stats(x, y)
-                    figtitle = bundle + ' - Correlation between ' +
+                    figtitle = bundle + ' - Correlation between ' +\
                                x_axis_name + ' and ' + y_axis_name
 
                     scatter_with_regression_line(
-                         x, y, intercept + slope * x, xlabel=x_axis_name,
-                         ylabel=y_axis_name, marker=args.marker,
-                         marker_color=args.markercolor, line_label=line,
-                         marker_edgecolors=args.marker_edgecolor,
-                         line_color=args.regression_line_color,
-                         figtitle=figtitle)
-                    
+                        x, y, intercept + slope * x, xlabel=x_axis_name,
+                        ylabel=y_axis_name, marker=args.marker,
+                        marker_color=args.markercolor, line_label=line,
+                        marker_edgecolors=args.marker_edgecolor,
+                        line_color=args.regression_line_color,
+                        figtitle=figtitle)
+
                     curr_foler = bundle_list[idx]
                     outname = bundle_list[idx] + '_' + \
                         i + '_' + j + args.out_suffix
