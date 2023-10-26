@@ -203,7 +203,8 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False):
     # Initialize the first scatter plot
     fig = go.Figure()
     figtitle = column_list[0] + ' vs ' + column_list[1]
-    fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],          trendline="ols", trendline_scope="overall", title=figtitle, trendline_color_override="black")
+    fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],
+                     trendline="ols", trendline_scope="overall", title=figtitle, trendline_color_override="black")
     # Generate the update menu args for each combinaison of columns
     button_menu_list = []
     for xaxis in column_list:
@@ -223,7 +224,7 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False):
 
     # Update figure layout
     fig.update_layout(updatemenus=[go.layout.Updatemenu(type="dropdown",buttons=button_menu_list)], template="plotly_white",)
-    
+
     if show_only:
         fig.show()
     else:
