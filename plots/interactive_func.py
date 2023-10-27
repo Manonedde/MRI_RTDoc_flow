@@ -199,7 +199,8 @@ def generate_args_for_correlation(df, x, y, trend='ols',
     return args
 
 
-def multi_correlation_with_menu(df, column_list=None, show_only=False):
+def multi_correlation_with_menu(df, column_list=None, show_only=False,
+                                fig_width=700, fig_height=700):
     """
     Function to plot correlation between two measures with regression
     line and using a dropdown menu.
@@ -229,7 +230,7 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False):
                     method="update",
                     args=[
                         generate_args_for_correlation(
-                            df, xaxis, yaxis, strend='ols', scope='overall'),
+                            df, xaxis, yaxis, trend='ols', scope='overall'),
                         {"title": xaxis + ' vs ' + yaxis,
                          'xaxis': {'title': xaxis},
                          'yaxis': {'title': yaxis}}
@@ -239,7 +240,7 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False):
     # Update figure layout
     fig.update_layout(updatemenus=[go.layout.Updatemenu(
         type="dropdown", buttons=button_menu_list)], template="plotly_white",
-        width=1000, height=1000)
+        width=fig_width, height=fig_height)
 
     if show_only:
         fig.show()
@@ -247,7 +248,8 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False):
         return fig
 
 
-def scatter_with_two_menu(df, column_list=None, show_only=False):
+def scatter_with_two_menu(df, column_list=None, show_only=False,
+                          fig_width=700, fig_height=700):
     """
     Function to plot correlation between two measures with regression
     line and using a dropdown menu.
@@ -286,6 +288,9 @@ def scatter_with_two_menu(df, column_list=None, show_only=False):
                 "y": 1.2,
             }
             for axis in "xy"],
-        template="plotly_white", width=1000, height=1000)
+        template="plotly_white", width=fig_width, height=fig_height)
 
-    return fig
+    if show_only:
+        fig.show()
+    else:
+        return fig
