@@ -8,7 +8,6 @@ Script to plot correlation plot with linear trend.
 import argparse
 import os
 import pandas as pd
-import numpy as np
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from plot_fixed_func import scatter_with_regression_line

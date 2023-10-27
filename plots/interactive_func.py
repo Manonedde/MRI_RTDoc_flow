@@ -276,7 +276,7 @@ def scatter_with_two_menu(df, column_list=None, show_only=False):
                         "label": col,
                         "method": "update",
                         "args": [
-                            {axis: [column_list[col]]},
+                            {axis: [df[col]]},
                             {f"{axis}axis": {"title": {"text": col}}},
                         ],
                     }
