@@ -74,13 +74,13 @@ def scatter_with_regression_line(x,y, y_line, xlabel='', ylabel='',figtitle='',
                                  marker_type='o', marker_color='k',
                                  marker_edgecolors='k', marker_width = 0.5,
                                  marker_size = 10, line_label='',line_color='r',
-                                 line_width=0.5,transparency=0.8,):
+                                 line_width=0.5,transparency=0.8, kwgs={}):
 
     fig, ax = plt.subplots()
     # Plot data points
     ax.scatter(x, y, color=marker_color, edgecolors=marker_edgecolors,
                marker=marker_type, linewidth=marker_width, s=marker_size,
-               alpha=transparency)
+               alpha=transparency, **kwgs)
 
     # plot fit line
     ax.plot(x, y_line, label=line_label, color=line_color,

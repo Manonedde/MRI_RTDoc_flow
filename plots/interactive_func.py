@@ -84,7 +84,7 @@ def interactive_distribution_plot(
 def interactive_lineplot(df, x_col, y_col, color_col=False, use_order=False,
                          colormap=px.colors.qualitative.Set2, facetcol=False,
                          xrange=False, yrange=False, frame=False, group=False,
-                         y_label='', x_label='', title='',):
+                         y_label='', x_label='', title='', kwgs={}):
     """
     Generate an interactive lineplot.
 
@@ -106,7 +106,7 @@ def interactive_lineplot(df, x_col, y_col, color_col=False, use_order=False,
                   color=color_col, range_x=xrange, range_y=yrange,
                   template="plotly_white", animation_group=group,
                   color_discrete_sequence=colormap,
-                  title=title)
+                  title=title, **kwgs)
 
     fig.update_yaxes(title_text=y_label, visible=True)
     fig.update_xaxes(title_text=x_label, visible=True)
@@ -120,7 +120,7 @@ def interactive_correlation(df, x_column, y_column, color_column, trend_line='ol
                             column_spacing=0.09, row_spacing=0.09, title_size=20,
                             show_legend=False, custom_order=False, font_size=15,
                             fig_width=700, fig_height=700, line_width=1,
-                            x_label='', y_label='', figtitle='',):
+                            x_label='', y_label='', figtitle='', kwgs={}):
     """
     Generate interactive scatter plot.
 
@@ -154,7 +154,7 @@ def interactive_correlation(df, x_column, y_column, color_column, trend_line='ol
                      facet_row_wrap=row_wrap, facet_row_spacing=row_spacing,
                      height=fig_height, width=fig_width,
                      title=figtitle, color_discrete_map=colormap,
-                     category_orders=custom_order)
+                     category_orders=custom_order, **kwgs)
 
     fig.for_each_annotation(lambda anot: anot.update(
         text=anot.text.split("=")[-1]))
@@ -196,7 +196,7 @@ def generate_args_for_correlation(df, x, y, trend='ols',
 
 
 def multi_correlation_with_menu(df, column_list=None, show_only=False,
-                                fig_width=900, fig_height=700):
+                                fig_width=900, fig_height=700, kwgs={}):
     """
     Function to plot correlation between two measures with regression
     line and using a dropdown menu.
@@ -215,7 +215,7 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False,
     figtitle = column_list[0] + ' vs ' + column_list[1]
     fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],
                      trendline="ols", trendline_scope="overall",
-                     title=figtitle, trendline_color_override="black")
+                     title=figtitle, trendline_color_override="black", **kwgs)
     # Generate the update menu args for each combinaison of columns
     button_menu_list = []
     for xaxis in column_list:
@@ -245,7 +245,7 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False,
 
 
 def scatter_with_two_menu(df, column_list=None, show_only=False,
-                          fig_width=700, fig_height=700):
+                          fig_width=700, fig_height=700, kwgs={}):
     """
     Function to plot correlation between two measures with regression
     line and using a dropdown menu.
@@ -263,7 +263,7 @@ def scatter_with_two_menu(df, column_list=None, show_only=False,
     fig = go.Figure()
     figtitle = column_list[0] + ' vs ' + column_list[1]
     fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],
-                     title=figtitle,)
+                     title=figtitle, **kwgs)
 
     # Update layout to add menu list
     fig.update_layout(

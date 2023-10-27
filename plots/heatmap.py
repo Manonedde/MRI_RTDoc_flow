@@ -6,8 +6,6 @@ import pandas as pd
 
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.subplots
-
 from plotly.subplots import make_subplots
 
 
@@ -15,7 +13,7 @@ def interactive_heatmap(corr_map, title='', colbar_title='',
                         colormap=px.colors.sequential.YlGnBu,
                         y_label='', x_label='', r_min=0.3, r_max=1,
                         tick_font_size=15, title_size=20, tick_angle=90,
-                        fig_width=600, fig_height=600,):
+                        fig_width=600, fig_height=600, kwgs={}):
     """
     Generate interactive heatmap.
 
@@ -37,7 +35,7 @@ def interactive_heatmap(corr_map, title='', colbar_title='',
     fig.add_trace(go.Heatmap(z=corr_map.values, x=corr_map.columns,
                              y=corr_map.index, colorscale=colormap,
                              zmin=r_min, zmax=r_max,
-                             colorbar=dict(title=colbar_title)))
+                             colorbar=dict(title=colbar_title), **kwgs))
     # fig.update_xaxes(side = "top")
     fig.update_layout(go.Layout(width=fig_width,
                                 height=fig_height,
@@ -49,7 +47,6 @@ def interactive_heatmap(corr_map, title='', colbar_title='',
                                 xaxis=dict(title=x_label, tickangle=tick_angle,
                                            side='bottom')))
     return fig
-
 
 
 def interactive_heatmap_with_slider(
@@ -105,13 +102,12 @@ def interactive_heatmap_with_slider(
     return fig
 
 
-
 def interactive_heatmap_group(corr_group1, corr_group2, label_group1,
-                              label_group2, title='', colbar_title="Pearson r",
+                              label_group2, colbar_title="Pearson r",
                               colormap=px.colors.sequential.YlGnBu,
                               y_label='', r_min=0.3, r_max=1,
                               tick_font_size=15, title_size=20, tick_angle=90,
-                              fig_width=700, fig_height=700,):
+                              fig_width=700, fig_height=700, kwgs={}):
     """
     Generate two interactive heatmaps.
 
@@ -143,13 +139,13 @@ def interactive_heatmap_group(corr_group1, corr_group2, label_group1,
         go.Heatmap(z=corr_group1.values, x=corr_group1.columns,
                    y=corr_group1.index, colorscale=colormap,
                    colorbar=dict(title=colbar_title), zmin=r_min, zmax=r_max,
-                   name=label_group1),row=1, col=1)
+                   name=label_group1, **kwgs),row=1, col=1)
 
     fig.append_trace(
         go.Heatmap(z=corr_group2.values, x=corr_group2.columns,
                    y=corr_group2.index, colorscale=colormap,
                    colorbar=dict(title=colbar_title), zmin=r_min, zmax=r_max,
-                   name=label_group2), row=1, col=2)
+                   name=label_group2, **kwgs), row=1, col=2)
 
     # Update axis heatmap group 1
     fig.update_yaxes(title_text=y_label,visible=True,
@@ -179,9 +175,6 @@ def interactive_heatmap_group(corr_group1, corr_group2, label_group1,
                       height=fig_height)
 
     return fig
-
-
-
 
 
 def interactive_heatmap_group_with_slider(
