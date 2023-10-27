@@ -238,9 +238,54 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False):
 
     # Update figure layout
     fig.update_layout(updatemenus=[go.layout.Updatemenu(
-        type="dropdown", buttons=button_menu_list)], template="plotly_white",)
+        type="dropdown", buttons=button_menu_list)], template="plotly_white",
+        width=1000, height=1000)
 
     if show_only:
         fig.show()
     else:
         return fig
+
+
+def scatter_with_two_menu(df, column_list=None, show_only=False):
+    """
+    Function to plot correlation between two measures with regression
+    line and using a dropdown menu.
+
+    df:             Dataframe.
+    column_list:    List of column name from dataframe. By default, used all
+                    columns from dataframe.
+
+    Return      Figure structure that could be saved as html.
+    """
+    if column_list is None:
+        column_list = df.columns.tolist()
+
+    # Initialize the first scatter plot
+    fig = go.Figure()
+    figtitle = column_list[0] + ' vs ' + column_list[1]
+    fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],
+                     title=figtitle,)
+
+    # Update layout to add menu list
+    fig.update_layout(
+        updatemenus=[
+            {
+                "buttons": [
+                    {
+                        "label": col,
+                        "method": "update",
+                        "args": [
+                            {axis: [column_list[col]]},
+                            {f"{axis}axis": {"title": {"text": col}}},
+                        ],
+                    }
+                    for col in df.columns
+                ],
+                "x": 0 if axis == "x" else 0.1,
+                "y": 1.2,
+            }
+            for axis in "xy"],
+        template="plotly_white", width=1000, height=1000)
+
+    return fig
