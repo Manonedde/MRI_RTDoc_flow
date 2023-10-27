@@ -5,21 +5,17 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-from plotly.subplots import make_subplots
 
-# or interacive_distribution ?
-
-
-def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
-                        colormap='Set2', f_column=None, f_row=None,
-                        column_wrap=None, row_wrap=None, bgcolor="white",
-                        column_spacing=0.09, row_spacing=0.09, title_size=20,
-                        show_legend=False, custom_order=None, font_size=15,
-                        fig_width=900, fig_height=700, line_width=1,
-                        x_label='', y_label='', custom_y_range=False,
-                        print_yaxis_range=False, kwgs={}):
+def interactive_distribution_plot(
+        df, x_column, y_column, color_column, figtitle='', colormap='Set2',
+        f_column=None, f_row=None, column_wrap=None, bgcolor="white",
+        column_spacing=0.09, row_spacing=0.09, title_size=20, font_size=15,
+        show_legend=False, custom_order=None, fig_width=900, fig_height=700,
+        line_width=1, x_label='', y_label='', custom_y_range=False,
+        print_yaxis_range=False, kwgs={}):
     """
-    Generate interactive distribution plot according to category (y_column).
+    Generate interactive distribution plot according to category (x_column)
+    and value (y_column) with individual color (color_column).
 
     df :                Dataframe
     x_column:           Column corresponding to x-axis
@@ -200,7 +196,7 @@ def generate_args_for_correlation(df, x, y, trend='ols',
 
 
 def multi_correlation_with_menu(df, column_list=None, show_only=False,
-                                fig_width=700, fig_height=700):
+                                fig_width=900, fig_height=700):
     """
     Function to plot correlation between two measures with regression
     line and using a dropdown menu.

@@ -24,7 +24,7 @@ from plots.parameters import (average_parameters_dict, order_plot_dict,
                               bundle_dict_color_v1, bundle_dict_color_v10)
 from plots.utils import (check_df_for_distribution, check_agreement_with_dict,
                          save_figures_as)
-from plots.interactive_func import interactive_scatter
+from plots.interactive_func import interactive_distribution_plot
 
 
 def _build_arg_parser():
@@ -142,7 +142,7 @@ def main():
 
             col_wrap = len(frame['Measures'].unique().tolist()) / 2
 
-            fig = interactive_scatter(
+            fig = interactive_distribution_plot(
                 frame, "Bundles", "Value", "Bundles", colormap=bundle_colors,
                 f_column="Measures", column_wrap=int(col_wrap),
                 custom_order={"Measures": custom_order}, figtitle=curr_title,
@@ -180,7 +180,7 @@ def main():
 
         col_wrap = len(df['Measures'].unique().tolist()) / 2
 
-        fig = interactive_scatter(
+        fig = interactive_distribution_plot(
             df, "Bundles", "Value", "Bundles", colormap=bundle_colors,
             f_column="Measures", column_wrap=int(col_wrap),
             custom_order={"Measures": custom_order}, figtitle=curr_title,
