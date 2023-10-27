@@ -8,14 +8,16 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 # or interacive_distribution ?
+
+
 def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
-                             colormap='Set2', f_column=None, f_row=None,
-                             column_wrap=None, row_wrap=None, bgcolor="white",
-                             column_spacing=0.09, row_spacing=0.09, title_size=20,
-                             show_legend=False, custom_order=None, font_size=15,
-                             fig_width=900, fig_height=700,line_width=1,
-                             x_label='', y_label='',custom_y_range=False,
-                             print_yaxis_range=False, kwgs={}):
+                        colormap='Set2', f_column=None, f_row=None,
+                        column_wrap=None, row_wrap=None, bgcolor="white",
+                        column_spacing=0.09, row_spacing=0.09, title_size=20,
+                        show_legend=False, custom_order=None, font_size=15,
+                        fig_width=900, fig_height=700, line_width=1,
+                        x_label='', y_label='', custom_y_range=False,
+                        print_yaxis_range=False, kwgs={}):
     """
     Generate interactive distribution plot according to category (y_column).
 
@@ -54,7 +56,7 @@ def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
                      category_orders=custom_order, **kwgs)
 
     fig.for_each_annotation(lambda anot: anot.update(
-                                                text=anot.text.split("=")[-1]))
+        text=anot.text.split("=")[-1]))
     fig.update_layout(title_x=0.5, showlegend=show_legend,
                       font={'size': font_size},
                       title_font=dict(size=title_size), plot_bgcolor=bgcolor,)
@@ -85,7 +87,7 @@ def interactive_scatter(df, x_column, y_column, color_column, figtitle='',
 
 def interactive_lineplot(df, x_col, y_col, color_col=False, use_order=False,
                          colormap=px.colors.qualitative.Set2, facetcol=False,
-                         xrange=False, yrange=False, frame=False,group=False,
+                         xrange=False, yrange=False, frame=False, group=False,
                          y_label='', x_label='', title='',):
     """
     Generate an interactive lineplot.
@@ -105,24 +107,24 @@ def interactive_lineplot(df, x_col, y_col, color_col=False, use_order=False,
     """
 
     fig = px.line(df, x=x_col, y=y_col, animation_frame=frame,
-                  color=color_col, range_x=xrange, range_y = yrange,
+                  color=color_col, range_x=xrange, range_y=yrange,
                   template="plotly_white", animation_group=group,
                   color_discrete_sequence=colormap,
                   title=title)
 
     fig.update_yaxes(title_text=y_label, visible=True)
-    fig.update_xaxes(title_text=x_label,visible=True)
+    fig.update_xaxes(title_text=x_label, visible=True)
 
     return fig
 
 
 def interactive_correlation(df, x_column, y_column, color_column, trend_line='ols',
-                             colormap='Set2', f_column=False, f_row=False,
-                             column_wrap=False, row_wrap=False, bgcolor="white",
-                             column_spacing=0.09, row_spacing=0.09, title_size=20,
-                             show_legend=False, custom_order=False, font_size=15,
-                             fig_width=700, fig_height=700,line_width=1,
-                             x_label='', y_label='',figtitle='',):
+                            colormap='Set2', f_column=False, f_row=False,
+                            column_wrap=False, row_wrap=False, bgcolor="white",
+                            column_spacing=0.09, row_spacing=0.09, title_size=20,
+                            show_legend=False, custom_order=False, font_size=15,
+                            fig_width=700, fig_height=700, line_width=1,
+                            x_label='', y_label='', figtitle='',):
     """
     Generate interactive scatter plot.
 
@@ -159,7 +161,7 @@ def interactive_correlation(df, x_column, y_column, color_column, trend_line='ol
                      category_orders=custom_order)
 
     fig.for_each_annotation(lambda anot: anot.update(
-                                                text=anot.text.split("=")[-1]))
+        text=anot.text.split("=")[-1]))
     fig.update_layout(title_x=0.5, showlegend=show_legend,
                       font={'size': font_size},
                       title_font=dict(size=title_size), plot_bgcolor=bgcolor,)
@@ -172,28 +174,39 @@ def interactive_correlation(df, x_column, y_column, color_column, trend_line='ol
     return fig
 
 
-def generate_args_for_correlation(df, x, y, trend='ols',        
-                                       scope='overall', colorline='black'):
+def generate_args_for_correlation(df, x, y, trend='ols',
+                                  scope='overall', colorline='black'):
     """
-    Function to generate arguments required to to buttons function of layout.Updatemenu().
+    Function to generate arguments required to to buttons function of 
+    layout.Updatemenu().
 
-    df:
-    x:
-    y:
-    trend:
-    scope:
-    colorline:
+    df:             Dataframe
+    x:              Column name used for X-axis.
+    y:              Column name used for Y-axis.
+    trend:          Fit data option. Could be "ols", "lowess", ect.
+    scope:          How to fit is done, for all data or by group/color.
+    colorline:      Color choose for line.
 
     Return  Dictionary which fit to buttons function of layout.Updatemenu().
     """
-    return {"x":[df[x], px.scatter(x=df[x], y=df[y], trendline=trend).data[1].  x], "y":[df[y], px.scatter(x=df[x], y=df[y], trendline=trend).data[1].y],"trendline":[trend], "trendline_scope":[scope],"trendline_color_override":[colorline]}
+    args = {"x": [df[x], px.scatter(x=df[x], y=df[y],
+                                    trendline=trend).data[1].x],
+            "y": [df[y], px.scatter(x=df[x], y=df[y],
+                                    trendline=trend).data[1].y],
+            "trendline": [trend], "trendline_scope": [scope],
+            "trendline_color_override": [colorline]}
+
+    return args
 
 
 def multi_correlation_with_menu(df, column_list=None, show_only=False):
     """
-    Function to plot correlation between two measures with regression line and using a dropdown menu.
-    df:
-    column_list:
+    Function to plot correlation between two measures with regression
+    line and using a dropdown menu.
+
+    df:             Dataframe.
+    column_list:    List of column name from dataframe. By default, used all
+                    columns from dataframe.
 
     Return      Figure structure that could be saved as html.
     """
@@ -204,26 +217,28 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False):
     fig = go.Figure()
     figtitle = column_list[0] + ' vs ' + column_list[1]
     fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],
-                     trendline="ols", trendline_scope="overall", title=figtitle, trendline_color_override="black")
+                     trendline="ols", trendline_scope="overall",
+                     title=figtitle, trendline_color_override="black")
     # Generate the update menu args for each combinaison of columns
     button_menu_list = []
     for xaxis in column_list:
         for yaxis in column_list:
             if xaxis != yaxis:
                 curr_button_dict = dict(
-                            label= xaxis + ' vs ' + yaxis, 
-                            method="update", 
-                            args=[
-                                generate_args_for_correlation(
-                                    df, xaxis, yaxis, strend='ols', scope='overall'),
-                                {"title": xaxis + ' vs ' + yaxis,
-                                 'xaxis': {'title': xaxis}, 
-                                 'yaxis': {'title': yaxis}}
-                                ])
+                    label=xaxis + ' vs ' + yaxis,
+                    method="update",
+                    args=[
+                        generate_args_for_correlation(
+                            df, xaxis, yaxis, strend='ols', scope='overall'),
+                        {"title": xaxis + ' vs ' + yaxis,
+                         'xaxis': {'title': xaxis},
+                         'yaxis': {'title': yaxis}}
+                    ])
                 button_menu_list.append(curr_button_dict)
 
     # Update figure layout
-    fig.update_layout(updatemenus=[go.layout.Updatemenu(type="dropdown",buttons=button_menu_list)], template="plotly_white",)
+    fig.update_layout(updatemenus=[go.layout.Updatemenu(
+        type="dropdown", buttons=button_menu_list)], template="plotly_white",)
 
     if show_only:
         fig.show()
