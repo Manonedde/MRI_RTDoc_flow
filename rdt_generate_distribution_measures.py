@@ -24,7 +24,7 @@ from plots.parameters import (average_parameters_dict, order_plot_dict,
                               bundle_dict_color_v1, bundle_dict_color_v10)
 from plots.utils import (check_df_for_distribution, check_agreement_with_dict,
                          save_figures_as)
-from plots.interactive_func import interactive_distribution_plot
+from plots.scatter import interactive_distribution_plot
 
 
 def _build_arg_parser():
