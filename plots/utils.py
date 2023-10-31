@@ -143,3 +143,19 @@ def check_agreement_with_dict(df, check_column, input_parameters,
                              '\nUse --custom_* options to parse a custom'
                              ' list or --filter_missing to remove missing'
                              ' items.')
+
+
+def get_trend_from_plot(results, outpath='./', outname='', save_as='txt'):
+    for n_result in range(len(results)):
+        if outname == '':
+            outname = 'trend_summary_' + str(n_result) + '.' + save_as
+        else:
+            outname = outname + str(n_result) + '.' + save_as
+        if save_as == 'txt':
+            with open(os.path.join(outpath, outname), 'w') as files:
+                files.write(
+                    results.px_fit_results.iloc[n_result].summary().as_text())
+        elif save_as == 'csv':
+            with open(os.path.join(outpath, outname), 'w') as files:
+                files.write(
+                    results.px_fit_results.iloc[n_result].summary().as_csv())
