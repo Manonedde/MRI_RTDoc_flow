@@ -342,3 +342,18 @@ def split_df_by(df, col_arg):
         df_tmp = df.loc[df[col_arg] == unique_arg].reset_index(drop=True)
         split_df.append(df_tmp)
     return split_df, split_name
+
+
+def pivot_to_wide(df, pivot_index, pivot_columns, pivot_value,
+                  longitudinal=False):
+    """
+    """
+    if longitudinal:
+        df = df.groupby([pivot_index,
+                         pivot_columns])[pivot_value].mean().reset_index()
+        df = df.pivot(index=pivot_index, columns=pivot_columns,
+                      values=pivot_value).reset_index()
+    else:
+        df = df.pivot(index=pivot_index, columns=pivot_columns,
+                      values=pivot_value).reset_index()
+    return df

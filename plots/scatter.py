@@ -103,7 +103,6 @@ def interactive_correlation_with_fit(
     return fig
 
 
-
 def get_buttons_infos(df, x, y, trend='ols', scope='overall',
                       colorline='black'):
     """
@@ -133,7 +132,7 @@ def get_buttons_infos(df, x, y, trend='ols', scope='overall',
             "trendline_color_override": [colorline]},
             {'title': x + ' vs ' + y, 'xaxis': {'title': x},
              'yaxis': {'title': y}, 'annotations': annot}])
-    
+
     return button_dict
 
 
