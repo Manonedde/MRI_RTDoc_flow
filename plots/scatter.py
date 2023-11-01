@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import itertools
 
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import statsmodels.api as sm
 
 from plots.utils import get_trend_from_plot
 
@@ -103,111 +105,41 @@ def interactive_correlation_with_fit(
     return fig
 
 
-def generate_args_for_correlation(df, x, y, trend='ols',
-                                  scope='overall', colorline='black'):
-    """
-    Function to generate arguments required to to buttons function of 
-    layout.Updatemenu().
+def add_ols_info(data):
+    return 'y = {}x + {}<br>R2 = {}'.format(str(round(data[1], 2)),
+                                            str(round(data[0], 2)),
+                                            str(round(data[2], 2)))
 
-    df:             Dataframe
-    x:              Column name used for X-axis.
-    y:              Column name used for Y-axis.
-    trend:          Fit data option. Could be "ols", "lowess", ect.
-    scope:          How to fit is done, for all data or by group/color.
-    colorline:      Color choose for line.
-
-    Return  Dictionary which fit to buttons function of layout.Updatemenu().
-    """
-    args = {"x": [df[x], px.scatter(x=df[x], y=df[y],
-                                    trendline=trend).data[1].x],
-            "y": [df[y], px.scatter(x=df[x], y=df[y],
-                                    trendline=trend).data[1].y],
-            "trendline": [trend], "trendline_scope": [scope],
-            "trendline_color_override": [colorline]}
-
-    return args
-
-
-def multi_correlation_with_menu(df, column_list=None, show_only=False,
-                                fig_width=900, fig_height=700, trend='ols',
-                                scope='overall', colorline='black',
-                                kwgs={}):
-    """
-    Function to plot correlation between two measures with regression
-    line and using a dropdown menu.
-
-    df:             Dataframe.
-    column_list:    List of column name from dataframe. By default, used all
-                    columns from dataframe.
-
-    Return      Figure structure that could be saved as html.
-    """
-    if column_list is None:
-        column_list = df.columns.tolist()
-
-    # Initialize the first scatter plot
-    fig = go.Figure()
-    figtitle = column_list[0] + ' vs ' + column_list[1]
-    fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],
-                     trendline=trend, trendline_scope=scope,
-                     title=figtitle, trendline_color_override=colorline, **kwgs)
-    # Generate the update menu args for each combinaison of columns
-    button_menu_list = []
-    for xaxis in column_list:
-        for yaxis in column_list:
-            if xaxis != yaxis:
-                curr_button_dict = dict(
-                    label=xaxis + ' vs ' + yaxis,
-                    method="update",
-                    args=[
-                        generate_args_for_correlation(
-                            df, xaxis, yaxis, trend=trend, scope=scope,
-                            colorline=colorline, **kwgs),
-                        {"title": xaxis + ' vs ' + yaxis,
-                         'xaxis': {'title': xaxis},
-                         'yaxis': {'title': yaxis}, 'showlegend':True}
-                    ])
-                button_menu_list.append(curr_button_dict)
-
-    # Update figure layout
-    fig.update_layout(updatemenus=[go.layout.Updatemenu(
-        type="dropdown", buttons=button_menu_list)], template="plotly_white", width=fig_width, height=fig_height)
-    fig.for_each_trace(lambda t: t.update(hovertemplate='x: %{x} <br>y: %{y}'))
-
-    if show_only:
-        fig.show()
+def fetch_ols_results(fig, return_all=False):
+    trend_results = px.get_trendline_results(fig)
+    ols_parameters = [trend_results.iloc[0]['px_fit_results'].params[0],
+                      trend_results.iloc[0]['px_fit_results'].params[1],
+                      trend_results.iloc[0]["px_fit_results"].rsquared]
+    if return_all:
+        return trend_results
     else:
-        return fig
+        return ols_parameters
 
 
-
-
-
-
-
-def get_hover_and_buttons_info(df, x, y, trend='ols',
-                                  scope='overall', colorline='black'):
-    curr_fig = px.scatter(x=df[x], y=df[y],trendline=trend,
-                          trendline_scope=scope)
-    trend_results = px.get_trendline_results(curr_fig)
-    custom_data = [trend_results.iloc[0]['px_fit_results'].params[0],
-                  trend_results.iloc[0]['px_fit_results'].params[1],trend_results.iloc[0]["px_fit_results"].rsquared]
+def get_buttons_infos(df, x, y, trend='ols', scope='overall',
+                               colorline='black'):
     
+    curr_fig = px.scatter(x=df[x], y=df[y],trendline=trend,
+                          trendline_scope=scope, 
+                          trendline_color_override=colorline)
+
+    annot = [dict(x=1.2, y=0.95, yref='paper', xref='paper', showarrow=False,
+                  text=add_ols_info(fetch_ols_results(curr_fig)))]
+
     button_dict = dict(method='update', label='{} x {}'.format(x, y),
             args=[{"x": [df[x], curr_fig.data[1].x],
             "y": [df[y], curr_fig.data[1].y],
             "trendline": [trend], "trendline_scope": [scope],
-            "trendline_color_override": [colorline], "custom_data"},
-            {"title": x + ' vs ' + y,
-             'xaxis': {'title': x},
-             'yaxis': {'title': y}, 'showlegend':True}])
-
-    return custom_data, button_dict
-
-
-fig.data[1].name = fig.data[1].name  + ' y = ' + str(round(alpha, 2)) + ' + ' + str(round(beta, 2)) + 'x'
-name = "R-squared" + ' = ' + str(round(rsq, 2))
-
+            "trendline_color_override": [colorline]},
+            {'title': x + ' vs ' + y, 'xaxis': {'title': x},
+             'yaxis': {'title': y}, 'annotations': annot}])
+    
+    return button_dict
 
 
 def multi_correlation_with_menu(df, column_list=None, show_only=False,
@@ -230,46 +162,30 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False,
     # Initialize the first scatter plot
     fig = go.Figure()
     figtitle = column_list[0] + ' vs ' + column_list[1]
-    hover, _ = get_hover_and_buttons_info(df, column_list[0], column_list[1])
+    
     fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],
                      trendline=trend, trendline_scope=scope,
                      title=figtitle, trendline_color_override=colorline, 
-                     custom_data=hover, **kwgs)
+                     **kwgs)
+    fig.add_annotation(text=add_ols_info(fetch_ols_results(fig)), 
+                       showarrow=False,yref='paper', xref='paper',
+                       x=1.2, y=0.95)
     # Generate the update menu args for each combinaison of columns
     button_menu_list = []
     for xaxis, yaxis in itertools.combinations(column_list, 2):
-        curr_hover, curr_button_dict = 
-        button_menu_list.append(curr_button_dict)
+        button_menu_list.append(get_buttons_infos(df, xaxis, yaxis))
 
     # Update figure layout
     fig.update_layout(updatemenus=[go.layout.Updatemenu(
-        type="dropdown", buttons=button_menu_list)], template="plotly_white", width=fig_width, height=fig_height)
+        type="dropdown", buttons=button_menu_list)], template="plotly_white", 
+        width=fig_width, height=fig_height)
     fig.for_each_trace(lambda t: t.update(hovertemplate='x: %{x} <br>y: %{y}'))
 
     if show_only:
         fig.show()
     else:
         return fig
-    
 
-
-
-    newnames = {'col1':'hello', 'col2': 'hi'}
-fig.for_each_trace(lambda t: t.update(name = newnames[t.name],
-                                      legendgroup = newnames[t.name],
-                                      hovertemplate = t.hovertemplate.replace(t.name, newnames[t.name])
-                                     )
-                  )
-
-xNames_cycle = cycle(regressors)
-col_cycle = cycle(px.colors.qualitative.Plotly)
-fig.for_each_trace(lambda t: t.update(name = next(xNames_cycle),
-                                      marker_color = next(col_cycle),
-                                      showlegend = True) if t.mode == 'markers' else t.update(showlegend = False))
-
-yTitle = cycle(regressands)
-fig.for_each_yaxis(lambda yx: yx.update(title = next(yTitle)))
-fig.for_each_annotation(lambda a: a.update(text = '' if 'regressand' in a.text else ()))
 
 
 
@@ -298,11 +214,9 @@ def scatter_with_two_menu(df, column_list=None, show_only=False,
     fig.update_layout(
         updatemenus=[
             {"buttons": [
-                    {"label": col,
-                     "method": "update",
+                    {"label": col, "method": "update",
                      "args": [{axis: [df[col]]},
-                              {f"{axis}axis": {"title": {"text": col}}},
-                              ],
+                              {f"{axis}axis": {"title": {"text": col}}},],
                     }
                     for col in df.columns
                     ],
