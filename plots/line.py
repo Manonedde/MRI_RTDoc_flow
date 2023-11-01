@@ -5,7 +5,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-from plots.utils import get_trend_from_plot
+from plots.utils import save_trend_from_plot
 
 
 def interactive_lineplot(df, x_col, y_col, color_col=False, xrange=False,

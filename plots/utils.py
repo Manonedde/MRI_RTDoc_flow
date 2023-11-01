@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import plotly.express as px
 
 
 def generate_reorder_list(df, ordered_argument_list, with_column):
@@ -145,7 +146,48 @@ def check_agreement_with_dict(df, check_column, input_parameters,
                              ' items.')
 
 
-def get_trend_from_plot(results, outpath='./', outname='', save_as='txt'):
+def add_ols_info(data):
+    """
+    Returns a string (for html) of alpha, beta and R-squared values obtained
+    from a linear regression of type y=ax+b, R^2.
+    """
+    return 'y = {}x + {}<br>R<sup>2</sup> = {}'.format(str(round(data[1], 2)),
+                                                       str(round(data[0], 2)),
+                                                       str(round(data[2], 2)))
+
+
+def fetch_ols_results(fig, return_all=False):
+    """
+    Function for extracting trend information from a figure.
+
+    fig:         Figure structure
+    return_all : if True, returns the OLS output structure.
+                 Use print(val) to display it.
+
+    Returns alpha, beta and R-squared parameters from OLS.
+    """
+    trend_results = px.get_trendline_results(fig)
+    ols_parameters = [trend_results.iloc[0]['px_fit_results'].params[0],
+                      trend_results.iloc[0]['px_fit_results'].params[1],
+                      trend_results.iloc[0]["px_fit_results"].rsquared]
+    if return_all:
+        return trend_results
+    else:
+        return ols_parameters
+
+
+def save_trend_from_plot(results, outpath='./', outname='', save_as='txt'):
+    """
+    Function to save the results in .csv or .txt format of a linear regression
+    performed with OLS.
+
+    results:    Results structure from OLS.
+    outpath:    Path to output folder.
+    outname:    Name to save file.
+    save_as:    Format to save file (.csv or .txt).
+
+    Save file in .csv or .txt. 
+    """
     for n_result in range(len(results)):
         if outname == '':
             outname = 'trend_summary_' + str(n_result) + '.' + save_as
@@ -159,3 +201,4 @@ def get_trend_from_plot(results, outpath='./', outname='', save_as='txt'):
             with open(os.path.join(outpath, outname), 'w') as files:
                 files.write(
                     results.px_fit_results.iloc[n_result].summary().as_csv())
+

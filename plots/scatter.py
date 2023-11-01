@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 import itertools
 
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import statsmodels.api as sm
 
-from plots.utils import get_trend_from_plot
+from plots.utils import save_trend_from_plot, add_ols_info, fetch_ols_results
 
 
 def interactive_distribution_plot(
@@ -99,31 +97,28 @@ def interactive_correlation_with_fit(
                      height=fig_height, width=fig_width, **kwgs)
 
     if save_trend_as:
-        get_trend_from_plot(px.get_trendline_results(fig),
+        save_trend_from_plot(px.get_trendline_results(fig),
                             save_as=save_trend_as, outpath=trend_outpath)
 
     return fig
 
 
-def add_ols_info(data):
-    return 'y = {}x + {}<br>R2 = {}'.format(str(round(data[1], 2)),
-                                            str(round(data[0], 2)),
-                                            str(round(data[2], 2)))
-
-def fetch_ols_results(fig, return_all=False):
-    trend_results = px.get_trendline_results(fig)
-    ols_parameters = [trend_results.iloc[0]['px_fit_results'].params[0],
-                      trend_results.iloc[0]['px_fit_results'].params[1],
-                      trend_results.iloc[0]["px_fit_results"].rsquared]
-    if return_all:
-        return trend_results
-    else:
-        return ols_parameters
-
 
 def get_buttons_infos(df, x, y, trend='ols', scope='overall',
-                               colorline='black'):
-    
+                      colorline='black'):
+    """
+    Function to generate arguments required to to buttons function of 
+    layout.Updatemenu().
+
+    df:             Dataframe
+    x:              Column name used for X-axis.
+    y:              Column name used for Y-axis.
+    trend:          Fit data option. Could be "ols", "lowess", ect.
+    scope:          How to fit is done, for all data or by group/color.
+    colorline:      Color choose for line.
+    Return  Dictionary which fit to buttons function of layout.Updatemenu().
+    """
+
     curr_fig = px.scatter(x=df[x], y=df[y],trendline=trend,
                           trendline_scope=scope, 
                           trendline_color_override=colorline)
@@ -153,6 +148,12 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False,
     df:             Dataframe.
     column_list:    List of column name from dataframe. By default, used all
                     columns from dataframe.
+    show_only:      If true, it displays the figure without saving it.
+    fig_width :     Set the width of figure
+    fig_height :    Set the height of figure
+    trend:          Fit data option. Could be "ols", "lowess", ect.
+    scope:          How to fit is done, for all data or by group/color.
+    colorline:      Color choose for line.
 
     Return      Figure structure that could be saved as html.
     """
@@ -162,15 +163,14 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False,
     # Initialize the first scatter plot
     fig = go.Figure()
     figtitle = column_list[0] + ' vs ' + column_list[1]
-    
     fig = px.scatter(df, x=df[column_list[0]], y=df[column_list[1]],
-                     trendline=trend, trendline_scope=scope,
-                     title=figtitle, trendline_color_override=colorline, 
-                     **kwgs)
+                     trendline=trend, trendline_scope=scope, title=figtitle,
+                     trendline_color_override=colorline, **kwgs)
     fig.add_annotation(text=add_ols_info(fetch_ols_results(fig)), 
                        showarrow=False,yref='paper', xref='paper',
                        x=1.2, y=0.95)
-    # Generate the update menu args for each combinaison of columns
+
+    # Generate the update menu for each combinaison of columns
     button_menu_list = []
     for xaxis, yaxis in itertools.combinations(column_list, 2):
         button_menu_list.append(get_buttons_infos(df, xaxis, yaxis))
@@ -185,8 +185,6 @@ def multi_correlation_with_menu(df, column_list=None, show_only=False,
         fig.show()
     else:
         return fig
-
-
 
 
 def scatter_with_two_menu(df, column_list=None, show_only=False,
