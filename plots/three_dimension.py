@@ -10,9 +10,6 @@ import pandas as pd
 
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.subplots
-
-from plotly.subplots import make_subplots
 
 from mpl_toolkits.mplot3d import Axes3D #axes3d
 import matplotlib.pyplot as plt
@@ -343,7 +340,7 @@ def plots_3d_scatter(df, xcol, ycol, zcol, xlabel, ylabel, zlabel):
     return fig, ax
 
 
-def get_slider_dict_for_3dvolume(z_length, use_prefix=''):
+def get_slider_dict_for_3dvolume(z_length, use_prefix='', start_at=1):
     return [dict(
         steps=[dict(
             method='animate',
@@ -351,7 +348,8 @@ def get_slider_dict_for_3dvolume(z_length, use_prefix=''):
                   dict(mode='immediate',
                        frame=dict(duration=10, redraw=True),
                        transition=dict(duration=0))],
-            label=f'{single_slice+1}') for single_slice in range(z_length)],
+            label=f'{single_slice+1}') 
+            for single_slice in range(int(start_at), z_length)],
         active=17, transition=dict(duration=0), x=0, y=0,
         currentvalue=dict(font=dict(size=12), prefix=use_prefix + ': ',
                           visible=True, xanchor='center'),
@@ -365,12 +363,13 @@ def frame_arguments(duration):
 
 
 def generate_3d_volume(volume, z_max, z_n_slices, z_step, x_size, y_size,
-                       colormap, title='', prefix_slider='z slice', add_buttons=True, show_scale=False):
+                       colorname, title='', start_at=1, add_buttons=True,
+                       prefix_slider='z slice',  show_scale=False):
 
     # Create initial surface grid corresponding to image size and color
     init_surface = go.Surface(z=z_max*np.ones((x_size, y_size)),
                               surfacecolor=np.flipud(volume[-1]),
-                              colorscale=colormap, showscale=show_scale)
+                              colorscale=colorname, showscale=show_scale)
 
     # Create frame from data
     set_frames = [go.Frame(
@@ -378,10 +377,11 @@ def generate_3d_volume(volume, z_max, z_n_slices, z_step, x_size, y_size,
                    z=z_max-curr_slice*z_step * np.ones((x_size, y_size)),
                    surfacecolor=np.flipud(volume[-1-curr_slice]))],
         name=f'frame{curr_slice+1}')
-                for curr_slice in range(1, z_n_slices)]
+                for curr_slice in range(int(start_at), z_n_slices)]
 
     # Interactive view configuration
-    slider_dict = get_slider_dict_for_3dvolume(z_n_slices, prefix_slider)
+    slider_dict = get_slider_dict_for_3dvolume(z_n_slices, prefix_slider, 
+                                               start_at)
 
     # Create layout with slicer for interactive view
     set_layout = dict(title_text=title, title_x=0.5, width=900, height=700,

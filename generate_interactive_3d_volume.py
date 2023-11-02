@@ -24,6 +24,7 @@ from plots.three_dimension import generate_3d_volume
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from scilpy.utils.filenames import split_name_with_nii
 
+import matplotlib.cm as cm
 
 def _build_arg_parser():
     p = argparse.ArgumentParser(description=__doc__,
@@ -41,10 +42,14 @@ def _build_arg_parser():
     visu.add_argument('--title', default='Brain MRI',
                       help='Use the provided info for the histogram title.'
                            ' [%(default)s]')
-    visu.add_argument('--colormap', default='Greys',
+    visu.add_argument('--first_z_slice', type=int, default=1,
+                      help='Defines the first frame used to display the image.'
+                           ' [%(default)s]')
+    visu.add_argument('--colorname', default='Greys',
                       help='Use to display brain maps according to a '
-                           'specific colormap using the list of possible '
-                           'colormaps provided. [%(default)s]')
+                           'specific colorname using the list of possible '
+                           'colornames provided. Must be compatible with the'
+                           'surfaces. [%(default)s]')
     visu.add_argument('--add_buttons', action='store_true',
                       help='Add two buttons play and stop to the scroll bar. ')
     visu.add_argument('--display_scale', action='store_true',
@@ -81,12 +86,12 @@ def main():
     z_step = all_grid_step[1] - all_grid_step[0]
 
     # Define custom colorscale for brain
-    if args.colormap is None:
-        args.colormap = colormap_3d_volume
+    if args.colorname is None:
+        args.colorname = colormap_3d_volume
 
     fig = generate_3d_volume(data, rescale_z_max, z_slices, z_step, x_size,
-                             y_size, args.colormap, title=args.title,
-                             prefix_slider='z slice',
+                             y_size, args.colorname, title=args.title,
+                             prefix_slider='z slice', start_at=7,
                              add_buttons=args.add_buttons,
                              show_scale=args.display_scale)
 
