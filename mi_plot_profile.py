@@ -82,7 +82,7 @@ def main():
                             "legend.borderaxespad":3,"legend.columnspacing":3,
                             "figure.dpi":200, "legend.title_fontsize":0,
                             'grid.linewidth': 0})
-                            
+
         #style='correction', ajouter pour effect correction
         p = sns.relplot(data = tmp, x ='Section',y ='Value',hue = 'Measures',
                     ci = None, linewidth = 3, col = 'Method', kind ='line',
