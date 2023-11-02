@@ -20,7 +20,7 @@ import numpy as np
 
 from plots.parameters import colormap_3d_volume
 from plots.utils import save_figures_as
-from plots.3dimension import generate_3d_volume
+from plots.three_dimension import generate_3d_volume
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from scilpy.utils.filenames import split_name_with_nii
 
