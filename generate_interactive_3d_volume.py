@@ -85,10 +85,6 @@ def main():
     all_grid_step = np.linspace(0, rescale_z_max, z_slices)
     z_step = all_grid_step[1] - all_grid_step[0]
 
-    # Define custom colorscale for brain
-    if args.colorname is None:
-        args.colorname = colormap_3d_volume
-
     fig = generate_3d_volume(data, rescale_z_max, z_slices, z_step, x_size,
                              y_size, args.colorname, title=args.title,
                              prefix_slider='z slice', start_at=7,
