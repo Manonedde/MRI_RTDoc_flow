@@ -20,7 +20,7 @@ def _build_arg_parser():
     p.add_argument('in_csv',
                    help='CSV data. Recommended output from prep_csv.py. ')
 
-    p.add_argument('--out_name', default='correlation_plots',
+    p.add_argument('--out_name', default='_correlation_plots',
                    help='Output filename to save heatmap. [%(default)s]')
     p.add_argument('--out_dir',
                    help='Output directory for the labeled mask.')
@@ -39,7 +39,10 @@ def _build_arg_parser():
                              '[%(default)s]')
     frames.add_argument('--use_columns',
                         help='List to use to select a specific columns.')
-
+    frames.add_argument('--longitudinal', action='store_true',
+                        help='In case of longitudinal data, some plots option '
+                             'require to group by using mean().')
+    
     plot = p.add_argument_group(title='Scatter plot options')
     plot.add_argument('--plot_size', nargs=2, type=int,
                       metavar=('p_width', 'p_height'), default=(1000, 700),
@@ -77,7 +80,7 @@ def main():
     if args.split_by:
         multi_df, df_names = split_df_by(df, args.split_by)
         for frame, curr_name in zip(multi_df, df_names):
-            frame = pivot_to_wide(frame, 'Sid', 'Measures', 'Value'
+            frame = pivot_to_wide(frame, 'Sid', 'Measures', 'Value',
                                   longitudinal=args.longitudinal)
             frame = frame.set_index(frame.columns.tolist()[0])
             fig = multi_correlation_with_menu(
