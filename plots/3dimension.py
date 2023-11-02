@@ -325,8 +325,6 @@ def bar_charts3d_categorical(x, y, z, x_min=0, y_min=0, z_min='auto',
     return fig
 
 
-
-
 def plots_3d_scatter(df, xcol, ycol, zcol, xlabel, ylabel, zlabel):
 
     sns.set(style = "whitegrid")
@@ -343,3 +341,86 @@ def plots_3d_scatter(df, xcol, ycol, zcol, xlabel, ylabel, zlabel):
     ax.scatter(x, y, z)
 
     return fig, ax
+
+
+def get_slider_dict_for_3dvolume(z_length, use_prefix=''):
+    return [dict(
+        steps=[dict(
+            method='animate',
+            args=[[f'frame{single_slice+1}'],
+                  dict(mode='immediate',
+                       frame=dict(duration=10, redraw=True),
+                       transition=dict(duration=0))],
+            label=f'{single_slice+1}') for single_slice in range(z_length)],
+        active=17, transition=dict(duration=0), x=0, y=0,
+        currentvalue=dict(font=dict(size=12), prefix=use_prefix + ': ',
+                          visible=True, xanchor='center'),
+        len=1.0)]
+
+
+def frame_arguments(duration):
+    return {"frame": {"duration": duration}, "mode": "immediate",
+            "fromcurrent": True,
+            "transition": {"duration": duration, "easing": "linear"}, }
+
+
+def generate_3d_volume(volume, z_max, z_n_slices, z_step, x_size, y_size,
+                       colormap, title='', prefix_slider='z slice', add_buttons=True, show_scale=False):
+
+    # Create initial surface grid corresponding to image size and color
+    init_surface = go.Surface(z=z_max*np.ones((x_size, y_size)),
+                              surfacecolor=np.flipud(volume[-1]),
+                              colorscale=colormap, showscale=show_scale)
+
+    # Create frame from data
+    set_frames = [go.Frame(
+        data=[dict(type='surface', 
+                   z=z_max-curr_slice*z_step * np.ones((x_size, y_size)),
+                   surfacecolor=np.flipud(volume[-1-curr_slice]))],
+        name=f'frame{curr_slice+1}')
+                for curr_slice in range(1, z_n_slices)]
+
+    # Interactive view configuration
+    slider_dict = get_slider_dict_for_3dvolume(z_n_slices, prefix_slider)
+
+    # Create layout with slicer for interactive view
+    set_layout = dict(title_text=title, title_x=0.5, width=900, height=700,
+                         sliders=slider_dict)
+
+    # Generate 3D figure
+    fig = go.Figure(data=[init_surface], layout=set_layout, frames=set_frames)
+
+    # Axis parameters
+    set_axis = dict(showaxeslabels=True, showbackground=False,
+                    showgrid=False, gridwidth=1, gridcolor='black',
+                    tickfont=dict(color='white', size=1))
+
+    z_axis = dict(showaxeslabels=True, showbackground=False,
+                  showgrid=False, gridwidth=1, gridcolor='black',
+                  tickfont=dict(color='white', size=1),
+                  range=[-0.1, z_max], autorange=False)
+
+    # Update 3D figure with parameters
+    fig.update_layout(scene=dict(zaxis=z_axis, yaxis=set_axis,
+                                 xaxis=set_axis, bgcolor='white',
+                                 aspectratio=dict(x=1, y=1.2, z=1)),
+                      plot_bgcolor='rgb(255,255,255)',
+                      scene_camera=dict(up=dict(x=0, y=0, z=0),
+                                        eye=dict(x=0, y=0, z=1.5)))
+
+    # Add Menu with play and stop buttons
+    if add_buttons:
+        fig.update_layout(updatemenus=[
+                {"buttons": [{"args": [None, frame_arguments(0)],
+                              "label": "&#9654;",  # play symbol
+                              "method": "animate",},
+                            {"args": [[None], frame_arguments(0)],
+                             "label": "&#9724;",  # stop symbol
+                             "method": "animate",},
+                             ],
+                 "direction": "left",
+                 "pad": {"r": 10, "t": 70},
+                 "type": "buttons", "x": 0.1, "y": 0,}],
+                          sliders=slider_dict)
+
+    return fig
