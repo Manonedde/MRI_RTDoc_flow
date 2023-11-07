@@ -5,12 +5,10 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-from plots.utils import save_trend_from_plot
 
-
-def interactive_lineplot(df, x_col, y_col, color_col=False, xrange=False,
-                         yrange=False, colormap=px.colors.qualitative.Set2,
-                         frame=False, group=False, y_label='', x_label='',
+def interactive_lineplot(df, x_col, y_col, color_col=False, xrange=None,
+                         yrange=None, custom_y_dict=None, colormap=px.colors.qualitative.Set2,
+                         frame=None, group=None, y_label='', x_label='',
                          title='', template="plotly_white", kwgs={}):
     """
     Generate an interactive lineplot.
@@ -28,14 +26,17 @@ def interactive_lineplot(df, x_col, y_col, color_col=False, xrange=False,
 
     Return figure structure that could be save using write_html function.
     """
-
     fig = px.line(df, x=x_col, y=y_col, animation_frame=frame,
                   color=color_col, range_x=xrange, range_y=yrange,
                   template=template, animation_group=group,
-                  color_discrete_sequence=colormap,
-                  title=title, **kwgs)
+                  color_discrete_map=colormap, title=title, **kwgs)
 
     fig.update_yaxes(title_text=y_label, visible=True)
     fig.update_xaxes(title_text=x_label, visible=True)
+
+    if custom_y_dict:
+        for f in fig.frames:
+            if f.name in custom_y_dict:
+                f.layout.update(yaxis_range = custom_y_dict[(f.name)])
 
     return fig

@@ -29,8 +29,9 @@ average_parameters_dict = {
 
 ######### Profile setting #####
 order_plot_profile = ['DTI', 'DTI-FW', 'FW', 'HARDI', 'MTI', 'NODDI']
-dict_plot_profile = {"DTI": [0, 0.8], "DTI-FW": [0, 0.8], "FW": [0, 0.5],
-                     "HARDI": [0, 3], "MTI": [0, 30], "NODDI": [0, 1]}
+dict_plot_profile = {"DTI": [0, 0.8], "DTI-FW": [0, 0.8], "FW": [0, 0.7],
+                     "FODF": [0, 3], "HARDI": [0, 3], "MTI": [0, 30],
+                     "NODDI": [0, 1]}
 
 # Reorder heatmap matrice 'ECVF',
 new_order_measure = [

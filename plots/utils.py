@@ -55,7 +55,7 @@ def save_figures_as(fig, out_path, out_name, is_slider=False,
         fig.write_html(os.path.join(out_path, out_name + '.html'))
 
 
-def check_df_for_distribution(df, split_filter=None):
+def check_df_for_columns(df, split_filter=None, profile=None):
     """
     Function that checks the presence or absence of some columns and the
     compatibility of parameters used by the script.
@@ -65,9 +65,10 @@ def check_df_for_distribution(df, split_filter=None):
     use_data:   If None, display a warning message.
 
     """
-    if 'Section' in df.columns.tolist():
-        raise ValueError('The csv contains a section column.\n'
-                         'This script only deals with average measurements.')
+    if not profile:
+        if 'Section' in df.columns.tolist():
+            raise ValueError('The csv contains a section column.\n'
+                            'This script only deals with average measurements.')
 
     if 'Method' not in df.columns.tolist():
         raise ValueError("The csv not contains Method column. "
