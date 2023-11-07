@@ -18,7 +18,8 @@ import pandas as pd
 import plotly.express as px
 
 from dataframe.func import get_multi_corr_map, get_corr_map
-from dataframe.utils import get_row_name_from_col, check_agreement_with_dict
+from dataframe.utils import (get_row_name_from_col, check_agreement_with_dict,
+                             load_df)
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from plots.parameters import new_order_measure
 from plots.utils import save_figures_as, generate_reorder_list
@@ -109,10 +110,7 @@ def main():
         args.colormap = px.colors.sequential.YlGnBu
 
     # Load and Filter dataframe for figure
-    df = pd.read_csv(args.in_csv)
-
-    if 'Unnamed: 0' in df.columns.tolist():
-        df.drop('Unnamed: 0', axis=1, inplace=True)
+    df = load_df(args.in_csv)
     df = df[df['Statistics'] == args.use_stats]
 
     if args.custom_reorder is not None:

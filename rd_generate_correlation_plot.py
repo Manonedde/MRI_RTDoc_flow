@@ -9,6 +9,7 @@ import argparse
 import pandas as pd
 
 from dataframe.func import split_df_by, pivot_to_wide
+from dataframe.utils import load_df
 from plots.utils import save_figures_as
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from plots.scatter import multi_correlation_with_menu
@@ -71,9 +72,8 @@ def main():
         args.out_dir = './'
 
     # Load Data frame
-    df = pd.read_csv(args.in_csv)
-    if 'Unnamed: 0' in df.columns.tolist():
-        df.drop('Unnamed: 0', axis=1, inplace=True)
+    df = load_df(args.in_csv)
+
     df = df.loc[(df.Statistics == args.use_stats) &
                 (df.rbx_version == args.rbx_version)].reset_index(drop=True)
 

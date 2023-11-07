@@ -15,14 +15,14 @@ rdt_generate_mean_measures_across_bundles_plot.py dti.csv
 
 import argparse
 import pandas as pd
-import plotly.express as px
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from dataframe.parameters import scaling_metrics
 from dataframe.func import split_df_by
+from dataframe.utils import load_df
 from plots.parameters import (average_parameters_dict, order_plot_dict,
                               bundle_dict_color_v1, bundle_dict_color_v10)
-from plots.utils import (check_df_for_distribution, check_agreement_with_dict,
+from plots.utils import (check_df_for_columns, check_agreement_with_dict,
                          save_figures_as)
 from plots.scatter import interactive_distribution_plot
 
@@ -95,9 +95,7 @@ def main():
         args.out_dir = './'
 
     # Load and filter Dataframe
-    df = pd.read_csv(args.in_csv)
-    if 'Unnamed: 0' in df.columns.tolist():
-        df.drop('Unnamed: 0', axis=1, inplace=True)
+    df = load_df(args.in_csv)
     df = df.loc[(df.Statistics == args.use_stats) &
                 (df.rbx_version == args.rbx_version)].reset_index(drop=True)
 
@@ -112,7 +110,7 @@ def main():
         bundle_colors = bundle_dict_color_v1
 
     # check Dataframe shape before plot
-    check_df_for_distribution(df, split_filter=args.split_by)
+    check_df_for_columns(df, split_filter=args.split_by)
     df = check_agreement_with_dict(df, 'Bundles', bundle_colors,
                                    ignore_lenght=True, 
                                    rm_missing=args.filter_missing)
