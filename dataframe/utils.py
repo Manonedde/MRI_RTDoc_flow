@@ -3,6 +3,11 @@
 
 import pandas as pd
 
+def load_df(dataframe_path):
+    df = pd.read_csv(dataframe_path)
+    if 'Unnamed: 0' in df.columns.tolist():
+        df.drop('Unnamed: 0', axis=1, inplace=True)
+    return df
 
 # Convert json
 def split_col(x, delimiter_arg='.'):

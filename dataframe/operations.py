@@ -68,15 +68,6 @@ def list_column(df):
     return df.columns.tolist()
 
 
-def list_unique_from(df, column_name: str):
-    """
-    list_unique_from: DF
-        Return list of unique argument in specific column.
-    """
-    _validate_length_column([column_name], 1)
-    return  df[column_name].unique().tolist()
-
-
 def check_empty(df):
     """
     check_empty: DF
@@ -111,8 +102,58 @@ def drop_nan(df):
     return df, df_nona
 
 
+def list_unique_from(df, column_name: str):
+    """
+    list_unique_from: DF
+        Return list of unique argument in specific column.
+    """
+    _validate_length_column([column_name], 1)
+    return  df[column_name].unique().tolist()
+
+
+def lower_values(df, column_name: str, threshold):
+    """
+    lower_values: DF COLUMN_NAME THRESHOLD
+        Values below the threshold will be remove.
+    """
+    _validate_length_column([column_name], 1)
+    _validate_type(df[column_name].dtype, type(threshold))
+    return df[df[column_name] > threshold].reset_index(drop=True)
+
+
+def upper_values(df, column_name: str, threshold):
+    """
+    upper_values: DF COLUMN_NAME THRESHOLD
+        Values above the threshold will be remove.
+    """
+    _validate_length_column([column_name], 1)
+    _validate_type(df[column_name].dtype, type(threshold))
+    return df[df[column_name] < threshold].reset_index(drop=True)
+
+
+def exclude_values(df, column_name: str, threshold):
+    """
+    exclude_values: DF COLUMN_NAME THRESHOLD
+        Values equal to the threshold will be remove.
+    """
+    _validate_length_column([column_name], 1)
+    _validate_type(df[column_name].dtype, type(threshold))
+    return df[df[column_name] != threshold].reset_index(drop=True)
+
+
+def select_values(df, column_name: str, threshold):
+    """
+    select_values: DF COLUMN_NAME THRESHOLD
+        Values not equal to the threshold will be remove.
+        Values equl to the threshold will be save.
+    """
+    _validate_length_column([column_name], 1)
+    _validate_type(df[column_name].dtype, type(threshold))
+    return df[df[column_name] == threshold].reset_index(drop=True)
+
+
 def average_data(df, column_list: list, column_value: str):
-    """ 
+    """
     average_data: DF COLUMNS_LIST COLUMN_NUMERIC
         Average the values in numeric column according to the columns in the
         list.
@@ -125,7 +166,7 @@ def average_data(df, column_list: list, column_value: str):
 
 
 def sum_data(df, column_list: list, column_value: str):
-    """ 
+    """
     sum_data: DF COLUMNS_LIST COLUMN_NUMERIC
         Sum the values in numeric column according to the columns in the list.
         Design to sum volume or count for example.
@@ -197,62 +238,6 @@ def get_query(df, args_dict: dict(), remove=False, op_value=''):
     return df.query(query_from_dict).reset_index(drop=True)
 
 
-def merged_col_csv(df1, df2, label1: str, label2: str, colname: str):
-    """
-    Merged two dataframe based on column.
-    :param df1:
-    :param df2:
-    :param label1:
-    :param label2:
-    :param colname:
-    :return:
-    """
-    df1[colname] = label1
-    df2[colname] = label2
-    return pd.concat([df1, df2], ignore_index=True, sort=False)
-
-
-def lower_values(df, column_name: str, threshold):
-    """
-    lower_values: DF COLUMN_NAME THRESHOLD
-        Values below the threshold will be remove.
-    """
-    _validate_length_column([column_name], 1)
-    _validate_type(df[column_name].dtype, type(threshold))
-    return df[df[column_name] > threshold].reset_index(drop=True)
-
-
-def upper_values(df, column_name: str, threshold):
-    """
-    upper_values: DF COLUMN_NAME THRESHOLD
-        Values above the threshold will be remove.
-    """
-    _validate_length_column([column_name], 1)
-    _validate_type(df[column_name].dtype, type(threshold))
-    return df[df[column_name] < threshold].reset_index(drop=True)
-
-
-def exclude_values(df, column_name: str, threshold):
-    """
-    exclude_values: DF COLUMN_NAME THRESHOLD
-        Values equal to the threshold will be remove.
-    """
-    _validate_length_column([column_name], 1)
-    _validate_type(df[column_name].dtype, type(threshold))
-    return df[df[column_name] != threshold].reset_index(drop=True)
-
-
-def select_values(df, column_name: str, threshold):
-    """
-    select_values: DF COLUMN_NAME THRESHOLD
-        Values not equal to the threshold will be remove.
-        Values equl to the threshold will be save.
-    """
-    _validate_length_column([column_name], 1)
-    _validate_type(df[column_name].dtype, type(threshold))
-    return df[df[column_name] == threshold].reset_index(drop=True)
-
-
 def merged_on(df, column_list: list, args_dict: dict, volume=False):
     """
     merged_on: DF COLUMNS_LIST DICT OPTION
@@ -276,3 +261,17 @@ def merged_on(df, column_list: list, args_dict: dict, volume=False):
     else:
         return average_data(df, column_list[1:-1], column_list[-1])
 
+
+def merged_col_csv(df1, df2, label1: str, label2: str, colname: str):
+    """
+    Merged two dataframe based on column. Not used new, will see
+    :param df1:
+    :param df2:
+    :param label1:
+    :param label2:
+    :param colname:
+    :return:
+    """
+    df1[colname] = label1
+    df2[colname] = label2
+    return pd.concat([df1, df2], ignore_index=True, sort=False)
