@@ -5,18 +5,22 @@
 Performs an operation on a dataframe using column and/or row. 
 The supported operations are listed below.
 
-Some operations to threshold, select or exclude value accept float/int value as
-parameters.
+Some operations to threshold, select or exclude value accept string/float/int
+value as parameters.
 > df_operations.py lower_value data.csv 'Section' 2
 
 Dictionary option :
-    Use --my_args to provide a sequence of parameters in the form key=value or key=[list of values].
-    > df_operations.py get_query Measures=[FA, MD, ihMTR] Bundles=[AF_Left, UF_Right] Section=1
+    Use --my_args to provide a sequence of parameters in the form key=value
+    or key=[list of values].
+    > df_operations.py get_query Measures=[FA, MD, ihMTR]
+                            Bundles=[AF_Left, UF_Right] Section=1
+
 
 Operation merged_on:
     Function uses groupby() function of pandas.
     By default merged_on uses the mean() function to merge. 
-    To sum() instead of average, as for bundle volumes/streamline counts for example, use --options.
+    To sum() instead of average, as for bundle volumes/streamline counts for
+    example, use --options.
 
     --my_col: the order in which columns are supplied is important, 
           [column_for_replace, column_list_include_for_merge, column_numeric]
@@ -31,8 +35,21 @@ Operation merged_on:
         --my_cols Bundles Measures Section Method Value 
         --my_dict _L='' _R=''
 
-    Function replaces '_L' and '_R' by '' on 'Bundles' column and compute mean() value on 'Value' column keeping information from 'Measures', 'Section' and 'Method' colunm.
+    Function replaces '_L' and '_R' by '' on 'Bundles' column and compute
+    mean() value on 'Value' column keeping information from
+    'Measures', 'Section' and 'Method' colunm.
 
+
+Operation get_query:
+    args_dict:  Dictionary of {column_name: value(s)}.
+                Key must correspond to column name and value(s) correspond to
+                one or multiple row argument(s), could be string or int/float.
+                To include multiple criteria for value use a list.
+                {'column_name1': value, 'column_name2': ['arg1', 'argN'],
+                'column_nameN': "string"}
+    options:     If True, it will remove the rows corresponding to argument
+                listed in dictionary.
+    pattern:   Must be mathematical symbol like > or <.
 
 """
 
@@ -162,7 +179,7 @@ def main():
         try:
             output_df = OPERATIONS[args.operation](df, args.my_args,
                                                    remove=args.remove,
-                                                   op_value=args.value)
+                                                   op_value=args.pattern)
         except ValueError as msg:
             logging.error('{} operation failed.'.format(
                 args.operation.capitalize()))
