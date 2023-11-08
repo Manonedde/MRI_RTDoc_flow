@@ -15,41 +15,9 @@ Dictionary option :
     > df_operations.py get_query Measures=[FA, MD, ihMTR]
                             Bundles=[AF_Left, UF_Right] Section=1
 
+______________________________________________________________________________
 
-Operation merged_on:
-    Function uses groupby() function of pandas.
-    By default merged_on uses the mean() function to merge. 
-    To sum() instead of average, as for bundle volumes/streamline counts for
-    example, use --options.
-
-    --my_col: the order in which columns are supplied is important, 
-          [column_for_replace, column_list_include_for_merge, column_numeric]
-
-    column_for_replace: column used to replace dictionary elements (my_dict)
-    column_list_include_for_merge: List of included columns to merge data.
-                                   All columns not included will be averaged.
-    column_numerique: Column name containing values to be merged.
-
-    Ex. to merge left and right bundle:
-    df_opretaions merged_on data.csv 
-        --my_cols Bundles Measures Section Method Value 
-        --my_dict _L='' _R=''
-
-    Function replaces '_L' and '_R' by '' on 'Bundles' column and compute
-    mean() value on 'Value' column keeping information from
-    'Measures', 'Section' and 'Method' colunm.
-
-
-Operation get_query:
-    args_dict:  Dictionary of {column_name: value(s)}.
-                Key must correspond to column name and value(s) correspond to
-                one or multiple row argument(s), could be string or int/float.
-                To include multiple criteria for value use a list.
-                {'column_name1': value, 'column_name2': ['arg1', 'argN'],
-                'column_nameN': "string"}
-    options:     If True, it will remove the rows corresponding to argument
-                listed in dictionary.
-    pattern:   Must be mathematical symbol like > or <.
+OPERATION LIST:
 
 """
 
@@ -87,7 +55,8 @@ def _build_arg_parser():
 
     p.add_argument('--my_args', nargs='*', action=ParseDict,
                    help='Parameters used to build a dictionary. Example: '
-                        'key=value or key=[list of values],. Use a space to ' 'provide multiple keys.')
+                        'key=value or key=[list of values]. Use a space to '
+                        'provide multiple keys.')
     p.add_argument('--my_cols', nargs='+',
                    help='A column name or list of column names. ')
     p.add_argument('--pattern',
@@ -95,7 +64,7 @@ def _build_arg_parser():
                         'or rows.')
     p.add_argument('--value',
                    help='Value used for numeric operations on rows.')
-    p.add_argument('--options', action='store_true',
+    p.add_argument('--option', action='store_true',
                    help='Use for additional options.')
     p.add_argument('--out_dir',
                    help='Output directory to save CSV files. ')
@@ -119,8 +88,8 @@ def main():
     if args.operation not in OPERATIONS.keys():
         parser.error('Operation {} not implement.'.format(args.operation))
 
-    single_operations = [display_df, list_column, check_empty,
-                         drop_empty_column, drop_nan]
+    single_operations = ['display', 'list_column', 'check_empty',
+                         'drop_empty_column', 'drop_nan']
 
     if args.operation in single_operations:
         try:
@@ -131,8 +100,8 @@ def main():
             logging.error(msg)
         return
 
-    operations_on_value = [lower_values, upper_values,
-                           exclude_values, select_values]
+    operations_on_value = ['lower_values', 'upper_values',
+                           'exclude_values', 'select_values']
 
     if args.operation in operations_on_value:
         if not args.value:
@@ -146,7 +115,7 @@ def main():
             logging.error(msg)
             return
 
-    operations_on_column = [get_data_where, average_data, sum_data]
+    operations_on_column = ['get_data_where', 'average_data', 'sum_data']
 
     if args.operation in operations_on_column:
         if not args.pattern:
