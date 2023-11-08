@@ -16,12 +16,15 @@ def get_df_ops():
         ('check_empty', check_empty),
         ('drop_empty_column', drop_empty_column),
         ('drop_nan', drop_nan),
-        ('remove', remove),
+        ('remove_row', remove_row),
         ('upper_values', upper_values),
         ('lower_values', lower_values),
         ('exclude_values', exclude_values),
         ('select_values', select_values),
+        ('get_data_from', get_data_from),
+        ('get_data_where', get_data_where),
         ('average_data', average_data),
+        ('sum_data', sum_data),
         ('apply_factor', apply_factor),
         ('query', get_query),
         ('merged_on', merged_on)])
@@ -35,17 +38,17 @@ def get_operations_doc(ops: dict):
         full_doc.append(func.__doc__)
     return "".join(full_doc)
 
-
 def _validate_length_column(column_list, length, min_length=False):
     """Make sure that the number of column in the list match to the expected
     number."""
-    if len(column_list) != length:
-         if len(column_list) < length and not min_length:
+    if min_length:
+        if not len(column_list) >= length:
             raise ValueError('This operation requires at least {}'
-                             ' column(s).'.format(length))
-         else:
-              raise ValueError('This operation requires {} column(s).'.format(
-                                                                      length))
+                                ' column(s).'.format(length))
+    else:
+        if len(column_list) != length:
+            raise ValueError('This operation requires {} '
+                             'column(s).'.format(length))
 
 
 def _validate_type(dtype1: type, dtype2: type):
@@ -58,17 +61,17 @@ def _validate_type(dtype1: type, dtype2: type):
 def display(df):
     """
     display_df:     DF
-                    Print head of Dataframe.
+                    Print Dataframe.
     """
-    return print(df.head())
+    return print(df)
 
 
 def list_column(df):
     """
     list_column:    DF
-                    Return the list of columns dataframe.
+                    Print the list of columns dataframe.
     """
-    return df.columns.tolist()
+    return print(df.columns.tolist())
 
 
 def check_empty(df):
@@ -93,7 +96,8 @@ def drop_empty_column(df):
 
     """
     empty_columns = check_empty(df)
-    return df.drop(empty_columns, axis = 1).reset_index(drop=True)
+    df = df.drop(empty_columns, axis = 1).reset_index(drop=True)
+    return df
 
 
 def drop_nan(df):
@@ -104,7 +108,7 @@ def drop_nan(df):
     """
     df_nona = df.drop(df.columns[df.isnull().sum()>len(df.columns)],axis = 1)
     df_nona = df_nona.dropna(axis = 0, how='any').reset_index(drop=True)
-    return df, df_nona
+    return df_nona
 
 
 def list_unique_from(df, column_name: str):
@@ -128,7 +132,7 @@ def lower_values(df, column_name: str, threshold):
 
     """
     _validate_length_column([column_name], 1)
-    _validate_type(df[column_name].dtype, type(threshold))
+    _validate_type(df[column_name].values.dtype, type(threshold))
     return df[df[column_name] > threshold].reset_index(drop=True)
 
 
@@ -148,9 +152,9 @@ def upper_values(df, column_name: str, threshold):
 def exclude_values(df, column_name: str, threshold):
     """
     exclude_values: DF COLUMN_NAME THRESHOLD
-                    Values equal to the threshold will be remove.
+                    Usage : --my_cols --value
 
-                    options : --my_cols --value
+                    Values equal to the threshold will be remove.
 
     """
     _validate_length_column([column_name], 1)
@@ -163,8 +167,8 @@ def select_values(df, column_name: str, threshold):
     select_values:  DF COLUMN_NAME THRESHOLD
                     Usage : --my_cols --value
 
+                    Values equal to the threshold will be save.
                     Values not equal to the threshold will be remove.
-                    Values equl to the threshold will be save.
 
     """
     _validate_length_column([column_name], 1)
@@ -172,36 +176,38 @@ def select_values(df, column_name: str, threshold):
     return df[df[column_name] == threshold].reset_index(drop=True)
 
 
-def average_data(df, column_list: list, column_value: str):
+def average_data(df, column_list: list):
     """
-    average_data:   DF COLUMNS_LIST COLUMN_NUMERIC
-                    Usage : --my_cols --pattern
+    average_data:   DF COLUMNS_LIST
+                    Usage : --my_cols
 
                     Average the values in numeric column according to the 
                     columns in the list.
+                    COLUMNS_LIST = [COLUMN_NAME(S), NUMERIC_COLUMN]
 
     """
-    _validate_length_column([column_value], 1)
-    _validate_length_column(column_list, 1, min_n=True)
+    _validate_length_column([column_list[-1]], 1)
+    _validate_length_column(column_list[:-1], 1, min_length=True)
     if len(check_empty(df)) > 0:
         raise ValueError('Remove column(s) with NaN value.')
-    return df.groupby(column_list)[column_value].mean().reset_index()
+    return df.groupby(column_list[:-1])[column_list[-1]].mean().reset_index()
 
 
-def sum_data(df, column_list: list, column_value: str):
+def sum_data(df, column_list: list):
     """
-    sum_data:   DF COLUMNS_LIST COLUMN_NUMERIC
-                Usage : --my_cols --pattern
+    sum_data:   DF COLUMNS_LIST
+                Usage : --my_cols
 
                 Sum the values in numeric column according to the columns
                 in the list. Design to sum volume or count for example.
+                COLUMNS_LIST = [COLUMN_NAME(S), NUMERIC_COLUMN]
 
     """
-    _validate_length_column([column_value], 1)
-    _validate_length_column(column_list, 1, min_n=True)
+    _validate_length_column([column_list[-1]], 1)
+    _validate_length_column(column_list[:-1], 1, min_length=True)
     if len(check_empty(df)) > 0:
         raise ValueError('Remove column(s) with NaN value.')
-    return df.groupby(column_list)[column_value].sum().reset_index()
+    return df.groupby(column_list[:-1])[column_list[-1]].sum().reset_index()
 
 
 def apply_factor(df, column_list: list, row_arg, factor):
@@ -241,15 +247,15 @@ def get_data_from(df, column_name: str, row_args):
     """
     get_data_from:  DF COLUMN_NAME PATTERN_row
                     Usage : --my_cols --pattern
-                    Selects rows with one or multiple specific value(s) in
+                    Selects rows with one specific value in
                     a specific column.
 
     """
     _validate_length_column([column_name], 1)
-    return df.loc[df[column_name].isin(row_args)].reset_index(drop=True)
+    return df.loc[df[column_name].isin([row_args])].reset_index(drop=True)
 
 
-def remove(df, column_name: list, string_arg: str):
+def remove_row(df, column_name: list, string_arg: str):
     """
     remove:         DF COLUMNS_NAME PATTERN
                     Usage : --my_cols --pattern
@@ -265,7 +271,7 @@ def remove(df, column_name: list, string_arg: str):
 def get_query(df, args_dict: dict(), remove=False, op_value=''):
     """
     get_query:      DF DICT [OPTION PATTERN optional]
-                    Usage : --my_args --option --pattern
+                    Usage : --my_dict --option --pattern
 
                     Get a subset dataframe from larger Dataframe using dict.
 
@@ -305,7 +311,7 @@ def get_query(df, args_dict: dict(), remove=False, op_value=''):
 def merged_on(df, column_list: list, args_dict: dict, volume=False):
     """
     merged_on:  DF COLUMNS_LIST DICT [OPTION optional] 
-                Usage : --my_cols --my_args --option
+                Usage : --my_cols --my_dict --option
 
                 Replace values based on dict and average data on column list
                 using groupby() function of pandas.
@@ -323,7 +329,8 @@ def merged_on(df, column_list: list, args_dict: dict, volume=False):
                         (in --my_dict)
                     column_list_include_for_merge:
                         List of included columns to merge data. All columns
-                        not included will be averaged.
+                        not included will be averaged. the column in 
+                        column_for_replace is included to this list.
                     column_numeric:
                         Column name containing values to be merged.
 
@@ -333,7 +340,7 @@ def merged_on(df, column_list: list, args_dict: dict, volume=False):
                     --my_dict _L='' _R=''
 
     """
-    _validate_length_column(column_list[1:-1], 1, min_n=True)
+    _validate_length_column(column_list[1:-1], 1, min_length=True)
 
     if len(check_empty(df)) > 0:
         raise ValueError('Remove column(s) with NaN value.')
@@ -341,9 +348,9 @@ def merged_on(df, column_list: list, args_dict: dict, volume=False):
     df[column_list[0]] = df[column_list[0]].replace(args_dict, regex=True)
 
     if volume:
-        return sum_data(df, column_list[1:-1], column_list[-1])
+        return sum_data(df, column_list)
     else:
-        return average_data(df, column_list[1:-1], column_list[-1])
+        return average_data(df, column_list)
 
 
 def merged_col_csv(df1, df2, label1: str, label2: str, colname: str):
