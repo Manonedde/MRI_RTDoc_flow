@@ -1,0 +1,8 @@
+{"fa": "FA",
+ "AD": "ad_metric",
+ "GFA": "gfa_metric",
+ "fw": "FW",
+ "fat": "FA-FWcorrected", 
+ "volume": "Volume",
+ "streamline": "Count",
+ "length": "Length"}
