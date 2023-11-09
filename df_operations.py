@@ -23,6 +23,7 @@ OPERATION LIST:
 """
 
 import argparse
+import json
 import logging
 import os
 
@@ -60,11 +61,16 @@ def _build_arg_parser():
     p.add_argument('out_name',
                    help='Filename to save csv outputs.')
 
-    p.add_argument('--my_dict', nargs='+', action=ParseDictArgs,
-                   metavar="KEY=VAL",
-                   help='Parameters used to build a dictionary. Example: '
-                        'key=value or key=[list of values]. Use a space to '
-                        'provide multiple keys.')
+    dict_fct = p.add_mutually_exclusive_group()
+    dict_fct.add_argument('--my_dict', nargs='+', action=ParseDictArgs,
+                          metavar="KEY=VAL",
+                          help='Parameters used to build a dictionary. '
+                               'Example: key=value or key=[list of values]. '
+                               'Use a space to provide multiple keys.')
+    dict_fct.add_argument('--param',
+                          help='Json file used to replace several elements '
+                               'in a specific column.')
+
     p.add_argument('--my_cols', nargs='+',
                    help='A column name or list of column names. ')
     p.add_argument('--pattern',
@@ -97,6 +103,9 @@ def main():
     single_operations = ['display', 'list_column', 'check_empty',
                          'drop_empty_column', 'drop_nan']
 
+    if args.param:
+        input_param = json.load(open(args.param))
+
     df = load_df(args.in_csv)
     result_df = []
 
@@ -109,8 +118,33 @@ def main():
             logging.error(msg)
             return
 
-    operations_on_value = ['lower_values', 'upper_values',
-                           'exclude_values', 'select_values']
+    operations_on_column = ['unique', 'remove_column']
+
+    if args.operation in operations_on_column:
+        try:
+            result_df = OPERATIONS[args.operation](df, str(args.my_cols[0]))
+        except ValueError as msg:
+            logging.error('{} operation failed.'.format(
+                    args.operation.capitalize()))
+            logging.error(msg)
+            return
+
+    operations_on_column_with_args = ['get_where', 'get_from',
+                                      'remove_row_with']
+
+    if args.operation in operations_on_column_with_args:
+        if not args.pattern:
+            parser.error('This operation must be used with --pattern.')
+        try:
+            result_df = OPERATIONS[args.operation](df, str(args.my_cols[0]),
+                                                   args.pattern)
+        except ValueError as msg:
+            logging.error('{} operation failed.'.format(
+                args.operation.capitalize()))
+            logging.error(msg)
+            return
+
+    operations_on_value = ['lower', 'upper', 'exclude', 'select']
 
     if args.operation in operations_on_value:
         if not args.value:
@@ -125,22 +159,7 @@ def main():
             logging.error(msg)
             return
 
-    operations_on_single_column = ['get_data_where', 'get_data_from',
-                                   'remove_row']
-
-    if args.operation in operations_on_single_column:
-        if not args.pattern:
-            parser.error('This operation must be used with --pattern.')
-        try:
-            result_df = OPERATIONS[args.operation](df, str(args.my_cols[0]),
-                                                   args.pattern)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                args.operation.capitalize()))
-            logging.error(msg)
-            return
-
-    operations_on_multi_columns = ['average_data', 'sum_data']
+    operations_on_multi_columns = ['average_on', 'sum_on']
 
     if args.operation in operations_on_multi_columns:
         try:
@@ -151,10 +170,29 @@ def main():
             logging.error(msg)
             return
 
-    if args.operation == 'merged_on':
-        if not args.my_cols and not args.my_dict:
+    if args.operation == 'replace':
+        if not args.my_cols and not (args.my_dict or args.param):
             parser.error('Merge operation must be used with --my_cols and '
-                         '--my_dict.')
+                         '--my_dict or --param.')
+        if args.param:
+            args.my_dict = input_param
+
+        try:
+            result_df = OPERATIONS[args.operation](df, args.my_cols,
+                                                   args.my_dict)
+        except ValueError as msg:
+            logging.error('{} operation failed.'.format(
+                args.operation.capitalize()))
+            logging.error(msg)
+            return
+
+    if args.operation == 'merged_on':
+        if not args.my_cols and not (args.my_dict or args.param):
+            parser.error('Merge operation must be used with --my_cols and '
+                         '--my_dict or --param.')
+        if args.param:
+            args.my_dict = input_param
+
         try:
             result_df = OPERATIONS[args.operation](df, args.my_cols,
                                                    args.my_dict, args.option)
@@ -165,8 +203,12 @@ def main():
             return
 
     if args.operation == 'query':
-        if not args.my_dict:
-            parser.error('Query operation must be used with --my_dict.')
+        if not (args.my_dict or args.param):
+            parser.error('Query operation must be used with --my_dict or '
+                         ' --param.')
+        if args.param:
+            args.my_dict = input_param
+
         try:
             result_df = OPERATIONS[args.operation](df, args.my_dict,
                                                    remove=args.option,
