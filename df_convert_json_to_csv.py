@@ -75,7 +75,6 @@ def main():
     # Load, reshape and save multi json data
     tmp_df = []
     for curr_json in args.in_json:
-        print(curr_json)
         if 'stats' in curr_json:
             print("The lesion_stats and lesion_streamlines_stats jsons\n"
                   "cannot be processed with this script. \n"
