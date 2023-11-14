@@ -30,15 +30,15 @@ def _build_arg_parser():
                    help='Output directory to save CSV files. ')
 
     filtering = p.add_argument_group(title='Filtering options')
-    filtering.add_argument('--rm_sid', nargs = '+',
+    filtering.add_argument('--rm_sid', nargs='+',
                            help='List of subjects to remove. ')
-    filtering.add_argument('--rm_bundle', nargs = '+',
+    filtering.add_argument('--rm_bundle', nargs='+',
                            help='List of bundles to remove.')
-    filtering.add_argument('--rm_measure', nargs = '+',
+    filtering.add_argument('--rm_measure', nargs='+',
                            help='List of measures to remove. ')
-    filtering.add_argument('--rm_stats', nargs = '+',
+    filtering.add_argument('--rm_stats', nargs='+',
                            help='List of statistics to remove. ')
-    filtering.add_argument('--rm_section', type=int, nargs = '+',
+    filtering.add_argument('--rm_section', type=int, nargs='+',
                            help='List of sections to remove. ')
     filtering.add_argument('--rm_rbx',
                            choices=["v1", "v10"],
