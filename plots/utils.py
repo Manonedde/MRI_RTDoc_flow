@@ -25,7 +25,7 @@ def generate_reorder_list(df, ordered_argument_list, with_column):
     for given_arg in ordered_argument_list:
         for unique_in_col in df[with_column].unique():
             reorder_columns_list.append(given_arg + '_' + unique_in_col)
-    return
+    return reorder_columns_list
 
 
 def save_figures_as(fig, out_path, out_name, is_slider=False,

@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
-from dataframe.utils import (list_metrics, list_method, scaling_metrics,
+from dataframe.parameters import (list_metrics, list_method, scaling_metrics,
                             measure_dict, replace_dict, columns_rename,
                             col_order)
 from dataframe.func import (filter_df, extract_average_and_profile,
@@ -165,7 +165,7 @@ def main():
     if args.longitudinal:
         col_order.insert(4, 'Session')
         df[['tmp','Session']] = df['sid'].str.split(args.longitudinal,
-                                                    1, expand=True)
+                                                    n=1, expand=True)
         df.drop('sid', axis=1, inplace=True)
         df = df.rename(columns={'tmp':'sid'})
 

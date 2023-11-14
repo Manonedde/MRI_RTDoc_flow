@@ -28,7 +28,7 @@ import os
 import pandas as pd
 import numpy as np
 
-from dataframe.utils import column_dict_name
+from dataframe.parameters import column_dict_name
 from dataframe.func import (split_col, reshape_to_wide_format,
                             convert_lesion_data)
 from scilpy.io.utils import (add_overwrite_arg,
@@ -48,9 +48,6 @@ def _build_arg_parser():
                    help='Output directory to save CSV. \n'
                    'By default is current folder.')
     p.add_argument('--wide', action='store_true',
-                   help='Option to save in wide format the statistic '
-                   'measurements. By default is long format.')
-    p.add_argument('--longitudinal', action='store_true',
                    help='Option to save in wide format the statistic '
                    'measurements. By default is long format.')
     p.add_argument('--save_merge_df', action='store_true',

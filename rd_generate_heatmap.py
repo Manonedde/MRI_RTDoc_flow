@@ -18,11 +18,11 @@ import pandas as pd
 import plotly.express as px
 
 from dataframe.func import get_multi_corr_map, get_corr_map
-from dataframe.utils import (get_row_name_from_col, check_agreement_with_dict,
-                             load_df)
+from dataframe.utils import (get_row_name_from_col, load_df)
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from plots.parameters import new_order_measure
-from plots.utils import save_figures_as, generate_reorder_list
+from plots.utils import (save_figures_as, generate_reorder_list,
+                         check_agreement_with_dict)
 from plots.heatmap import interactive_heatmap, interactive_heatmap_with_slider
 
 

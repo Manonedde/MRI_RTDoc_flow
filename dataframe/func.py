@@ -256,7 +256,7 @@ def generate_summary_table(df, by_cols=['Measures', 'Value'], round_at=3,
 
 
 def get_multi_corr_map(df, multi_col_arg, pivot_index, pivot_columns,
-                       pivot_value, reorder_col=False, post_pearson=None,
+                       pivot_value, reorder_col=None, post_pearson=None,
                        colbar_title='Pearson r', longitudinal=False):
     corr = []
     for multi_col in df[multi_col_arg].unique().tolist():
@@ -264,7 +264,7 @@ def get_multi_corr_map(df, multi_col_arg, pivot_index, pivot_columns,
         if longitudinal:
             tmp = tmp.groupby([pivot_index,
                                pivot_columns])[pivot_value].mean().reset_index()
-        if reorder_col:
+        if reorder_col is not None:
             corr_tmp = tmp.pivot(index=pivot_index, columns=pivot_columns,
                                  values=pivot_value
                                  ).reset_index().reindex(columns=reorder_col

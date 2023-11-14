@@ -34,14 +34,14 @@ mkdir $output_path/convert_to_csv
 
 python $source/df_convert_json_to_csv.py *json --save_merge_df \
                     --out_dir $output_path/convert_to_csv \
-                    --save_merge_df --longitudinal
+                    --save_merge_df
 
 python $source/df_prepare_csv_scil.py merged_csv_long.csv \
                     --out_dir $output_path/convert_to_csv \
-                    --rename_measure --merge_lr
+                    --rename_measure --merge_lr --longitudinal '_ses-'
 
 echo -e "Generate figures"
-mkdir -p $output_path/averages_figures $output_path/profile_figures \
+mkdir -p $output_path/averages $output_path/profile \
                         $output_path/heatmap $output_path/correlations
 
 python $source/rd_generate_heatmap.py \
