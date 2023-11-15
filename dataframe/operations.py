@@ -11,25 +11,29 @@ def get_df_ops():
     """Get a dictionary of all functions relating to dataframe operations"""
     return OrderedDict([
         ('display', display),
-        ('list_column', list_column),
+        ('column', list_column),
         ('unique', unique),
+        ('info', info),
         ('check_empty', check_empty),
         ('drop_empty_column', drop_empty_column),
         ('drop_nan', drop_nan),
         ('remove_column', remove_column),
+        ('rename', rename),
+        ('convert', convert),
         ('upper', upper),
         ('lower', lower),
         ('exclude', exclude),
         ('select', select),
         ('get_from', get_from),
         ('get_where', get_where),
-        ('remove_row_with', remove_row_with),
-        ('average_on', average_on),
-        ('sum_on', sum_on),
+        ('remove_row', remove_row),
+        ('average', average_on),
+        ('sum', sum_on),
         ('replace', replace),
-        ('apply_factor', apply_factor),
+        ('split', split),
+        ('factor', apply_factor),
         ('query', get_query),
-        ('merged_on', merged_on)])
+        ('merged', merged_on)])
 
 
 def get_operations_doc(ops: dict):
@@ -60,9 +64,21 @@ def _validate_type(dtype1: type, dtype2: type):
                          'dtype.')
 
 
+def build_query(args_dict, operator, operator_value=None):
+    """Function to build query structure compatible with df.query()
+       from dictionnary.
+    """
+    return ' and '.join(
+            [f"({col} {operator} '{row}')" 
+             if type(row) == str 
+             else f"({col} {operator} {row})" if type(row) == list 
+             else f"({col} {operator_value} {row})"
+             for col, row in args_dict.items()])
+
+
 def display(df):
     """
-    display_df:         DF
+    display:            DF
                         Print Dataframe.
     """
     return print(df)
@@ -70,10 +86,18 @@ def display(df):
 
 def list_column(df):
     """
-    list_column:        DF
+    column:             DF
                         Print the list of columns dataframe.
     """
     return print(df.columns.tolist())
+
+
+def info(df):
+    """
+    info:               DF
+                        Print summary informations of DataFrame.
+    """
+    return print(df.info())
 
 
 def check_empty(df):
@@ -125,9 +149,9 @@ def remove_column(df, column_name: str):
     return df.drop(column_name, axis = 1)
 
 
-def remove_row_with(df, column_name: list, string_arg: str):
+def remove_row(df, column_name: list, string_arg: str):
     """
-    remove_row_with:    DF COLUMNS_NAME PATTERN_row
+    remove_row:    DF COLUMNS_NAME PATTERN_row
                         Usage : --my_cols --pattern
 
                         Remove all rows corresponding to the pattern
@@ -148,6 +172,32 @@ def unique(df, column_name: str):
     """
     _validate_length_column([column_name], 1)
     return  df[column_name].unique().tolist()
+
+
+def rename(df, args_dict: dict()):
+    """
+    rename:         DF DICT
+                    Usage : --my_dict
+
+                    Rename column(s) according to dictionnary.
+                    Dict must be in {old: new} format.
+
+    """
+    return  df.rename(columns=args_dict)
+
+
+
+def convert(df, colunm_list: list, args_type: type):
+    """
+    convert:            DF COLUMN_NAME DTYPE
+                        Usage : --my_cols --pattern
+
+                        Converts dtype of one column.
+
+    """
+    _validate_length_column([colunm_list], 1, min_length=True)
+    df[colunm_list] = df[colunm_list].astype(args_type)
+    return df
 
 
 def lower(df, column_name: str, threshold):
@@ -237,6 +287,42 @@ def sum_on(df, column_list: list):
     return df.groupby(column_list[:-1])[column_list[-1]].sum().reset_index()
 
 
+def split(df, column_list: list, row_args):
+    """
+    split:          DF COLUMN_LIST PATTERN_row optional
+                    Usage : --my_cols --pattern
+
+                    Splits one column into multiple columns with delimiter or
+                    regular expression pattern.
+                    COLUMNS_LIST = [COLUMN_NAME_tosplit, NEW_COLNAME(S)]
+
+                    If only one column is supplied, the new column names will
+                    be assigned with numbers.
+
+    """
+    _validate_length_column([column_list], 1, min_length=True)
+    if len([column_list]) == 1:
+        df = pd.concat([df, df[column_list[0]].str.split(row_args,
+                                                      expand=True)], axis=1)
+    else:
+        df[column_list[1:]] = df[column_list[0]].str.split(row_args,
+                                                           expand=True)
+    return df
+
+
+def replace(df, column_name: str, args_dict: dict()):
+    """
+    replace:        DF COLUMN_NAME DICT
+                    Usage : --my_cols --my_dict or --param
+
+                    Replaces the values provided in the dictionary for a 
+                    specific column. Dict must be in {old: new} format.
+
+    """
+    _validate_length_column([column_name], 1)
+    return df.replace({column_name[0]: args_dict})
+
+
 def apply_factor(df, column_list: list, row_arg, factor):
     """
     apply_factor:   DF COLUMNS_LIST PATTERN_row FACTOR
@@ -254,18 +340,6 @@ def apply_factor(df, column_list: list, row_arg, factor):
     else:
         df.loc[(df[column_list[0]] == row_arg),
                column_list[1]] = tmp[column_list[1]] * factor
-
-
-def replace(df, column_name: str, args_dict: dict()):
-    """
-    replace:        DF COLUMN_NAME DICT
-                    Usage : --my_cols --my_dict or --param
-
-                    Replaces the values provided in the dictionary for a specific column. Dict must be in {old: new} format.
-
-    """
-    _validate_length_column([column_name], 1)
-    return df.replace({column_name[0]: args_dict})
 
 
 def get_where(df, column_name: str, string_arg: str):
@@ -295,12 +369,13 @@ def get_from(df, column_name: str, row_args):
     return df.loc[df[column_name].isin([row_args])].reset_index(drop=True)
 
 
-def get_query(df, args_dict: dict(), remove=False, op_value=''):
+def get_query(df, args_dict: dict(), remove=False, op_if_value=None):
     """
-    get_query:      DF DICT [OPTION PATTERN optional]
+    query:          DF DICT [OPTION PATTERN optional]
                     Usage : --my_dict --option --pattern
 
-                    Get a subset dataframe from larger Dataframe using dict.
+                    Get a subset dataframe from larger Dataframe using dict 
+                    to combine multi arguments.
 
                     DICT:  Dictionary of {column_name: value(s)}.
                            Key must correspond to column name and value(s)
@@ -319,20 +394,12 @@ def get_query(df, args_dict: dict(), remove=False, op_value=''):
 
     """
     if remove:
-        query_from_dict = ' and '.join(
-            [f'({col} != "{row}")' if type(row) == str else f'({col} != {row})'
-             for col, row in args_dict.items()])
-    elif op_value is not None:
-        query_from_dict = ' and '.join(
-            [f'{col} == "{row}"' if type(
-                row) == str else f'{col} {op_value} {row}'
-             for col, row in args_dict.items()])
+        return df.query(build_query(args_dict, '!=')).reset_index(drop=True)
+    elif op_if_value is not None:
+        return df.query(build_query(args_dict, '==', op_if_value)
+                        ).reset_index(drop=True)
     else:
-        query_from_dict = ' and '.join(
-            [f'({col} == "{row}")' if type(row) == str else f'({col} == {row})'
-             for col, row in args_dict.items()])
-
-    return df.query(query_from_dict).reset_index(drop=True)
+        return df.query(build_query(args_dict, '==')).reset_index(drop=True)
 
 
 def merged_on(df, column_list: list, args_dict: dict, volume=False):

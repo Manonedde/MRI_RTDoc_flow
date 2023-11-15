@@ -2,13 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """
-Performs an operation on a dataframe using column and/or row. 
-The supported operations are listed below. 
-Most operations are column-based. To combine multiple columns, use query.
+Performs an operation on a dataframe using column and/or row.
+The supported operations are listed below.
+Most operations are column-based. To combine multiple columns, use query to
+select or remove data (--option).
+To select data :
+    > df_operations.py query data.csv Measures=['FA','MD] Bundle=AF
+To remove data :
+    > df_operations.py query data.csv Measures=['FA','MD] Bundle=AF --option
 
 Some operations to threshold, select or exclude value accept string/float/int
 value as parameters.
-> df_operations.py lower_value data.csv 'Section' 2
+> df_operations.py lower data.csv 'Section' 2
 
 Dictionary option :
     Use --my_dict to provide a sequence of parameters in the form key=value
@@ -69,17 +74,17 @@ def _build_arg_parser():
                                'Use a space to provide multiple keys.')
     dict_fct.add_argument('--param',
                           help='Json file used to replace several elements '
-                               'in a specific column.')
+                               'in a specific column. See ex. in data.')
 
     p.add_argument('--my_cols', nargs='+',
                    help='A column name or list of column names. ')
     p.add_argument('--pattern',
                    help='String or column name used as argument on columns '
                         'or rows.')
-    p.add_argument('--value', type=float,
+    p.add_argument('--value',
                    help='Value used for numeric operations on rows.')
     p.add_argument('--option', action='store_true',
-                   help='Use for additional options.')
+                   help='Use for additional options depending on operation.')
     p.add_argument('--out_dir',
                    help='Output directory to save CSV files. ')
 
@@ -100,14 +105,16 @@ def main():
     if args.operation not in OPERATIONS.keys():
         parser.error('Operation {} not implement.'.format(args.operation))
 
-    single_operations = ['display', 'list_column', 'check_empty',
-                         'drop_empty_column', 'drop_nan']
-
     if args.param:
         input_param = json.load(open(args.param))
 
     df = load_df(args.in_csv)
     result_df = []
+
+    # Operations requires only dataframe
+    print_function = ['display', 'column', 'info']
+    single_operations = print_function + ['check_empty', 'drop_empty_column',
+                                          'drop_nan']
 
     if args.operation in single_operations:
         try:
@@ -118,6 +125,22 @@ def main():
             logging.error(msg)
             return
 
+    # Operations requires dataframe and dictionnary
+    operations_on_column_with_dict = ['rename']
+
+    if args.operation in operations_on_column_with_dict:
+        if not args.my_dict:
+            parser.error('This operation must be used with --my_dict.')
+        try:
+            result_df = OPERATIONS[args.operation](df, args.my_dict)
+        except ValueError as msg:
+            logging.error('{} operation failed.'.format(
+                    args.operation.capitalize()))
+            logging.error(msg)
+            return
+
+    # Single column operations
+    # Operations requires dataframe and single column
     operations_on_column = ['unique', 'remove_column']
 
     if args.operation in operations_on_column:
@@ -129,10 +152,11 @@ def main():
             logging.error(msg)
             return
 
-    operations_on_column_with_args = ['get_where', 'get_from',
-                                      'remove_row_with']
+    # Operations requires dataframe, single column and specific pattern
+    operations_on_column_with_pattern = ['get_where', 'get_from',
+                                         'remove_row']
 
-    if args.operation in operations_on_column_with_args:
+    if args.operation in operations_on_column_with_pattern:
         if not args.pattern:
             parser.error('This operation must be used with --pattern.')
         try:
@@ -144,6 +168,7 @@ def main():
             logging.error(msg)
             return
 
+    # Operations requires dataframe, single column and specific value
     operations_on_value = ['lower', 'upper', 'exclude', 'select']
 
     if args.operation in operations_on_value:
@@ -159,7 +184,9 @@ def main():
             logging.error(msg)
             return
 
-    operations_on_multi_columns = ['average_on', 'sum_on']
+    # Multi columns operations
+    # Operations requires dataframe and multi columns
+    operations_on_multi_columns = ['average', 'sum']
 
     if args.operation in operations_on_multi_columns:
         try:
@@ -170,6 +197,22 @@ def main():
             logging.error(msg)
             return
 
+    # Operations requires dataframe, multi columns and specific pattern
+    operations_on_multi_columns_with_pattern = ['convert', 'split']
+
+    if args.operation in operations_on_multi_columns_with_pattern:
+        if not args.pattern:
+            parser.error('This operation must be used with --pattern.')
+        try:
+            result_df = OPERATIONS[args.operation](df, args.my_cols,
+                                                   args.pattern)
+        except ValueError as msg:
+            logging.error('{} operation failed.'.format(
+                    args.operation.capitalize()))
+            logging.error(msg)
+            return
+
+    # Operations requires dataframe, multi columns and dictionnary
     if args.operation == 'replace':
         if not args.my_cols and not (args.my_dict or args.param):
             parser.error('Merge operation must be used with --my_cols and '
@@ -178,15 +221,16 @@ def main():
             args.my_dict = input_param
 
         try:
-            result_df = OPERATIONS[args.operation](df, args.my_cols,
-                                                   args.my_dict)
+            result_df = OPERATIONS[args.operation](
+                                            df, args.my_cols, args.my_dict)
         except ValueError as msg:
             logging.error('{} operation failed.'.format(
                 args.operation.capitalize()))
             logging.error(msg)
             return
 
-    if args.operation == 'merged_on':
+    # Operations requires dataframe, multi columns and dictionnary with option
+    if args.operation == 'merged':
         if not args.my_cols and not (args.my_dict or args.param):
             parser.error('Merge operation must be used with --my_cols and '
                          '--my_dict or --param.')
@@ -194,8 +238,24 @@ def main():
             args.my_dict = input_param
 
         try:
-            result_df = OPERATIONS[args.operation](df, args.my_cols,
-                                                   args.my_dict, args.option)
+            result_df = OPERATIONS[args.operation](
+                                df, args.my_cols, args.my_dict, args.option)
+        except ValueError as msg:
+            logging.error('{} operation failed.'.format(
+                args.operation.capitalize()))
+            logging.error(msg)
+            return
+
+    if args.operation == 'factor':
+        if not args.my_cols and not args.pattern and not args.value:
+            parser.error('Factor operation must be used with --my_cols and '
+                         '--pattern and --value.')
+        if args.param:
+            args.my_dict = input_param
+
+        try:
+            result_df = OPERATIONS[args.operation](
+                                df, args.my_cols, args.pattern, args.value)
         except ValueError as msg:
             logging.error('{} operation failed.'.format(
                 args.operation.capitalize()))
@@ -208,19 +268,20 @@ def main():
                          ' --param.')
         if args.param:
             args.my_dict = input_param
-
         try:
-            result_df = OPERATIONS[args.operation](df, args.my_dict,
-                                                   remove=args.option,
-                                                   op_value=args.pattern)
+            result_df = OPERATIONS[args.operation](
+                    df, args.my_dict, remove=args.option, op_value=args.pattern)
         except ValueError as msg:
             logging.error('{} operation failed.'.format(
                 args.operation.capitalize()))
             logging.error(msg)
             return
 
+    # Save output dataframe
     output_df = result_df
-    if len(output_df) == 0:
+    if args.operation in print_function:
+        pass
+    elif len(output_df) == 0:
         raise ValueError('Dataframe is empty.')
     else:
         output_df.to_csv(os.path.join(args.out_dir, args.out_name + '.csv'),
