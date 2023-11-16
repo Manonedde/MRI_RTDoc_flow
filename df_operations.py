@@ -50,7 +50,7 @@ class ParseDictArgs(argparse.Action):
          parse_dict = {}
          for key_val in values:
              parse_key, parse_val = key_val.split("=")
-             parse_dict[parse_key] = parse_val
+             parse_dict[parse_key] = parse_val.split(',')
          setattr(namespace, self.dest, parse_dict)
 
 
@@ -70,7 +70,7 @@ def _build_arg_parser():
     dict_fct.add_argument('--my_dict', nargs='+', action=ParseDictArgs,
                           metavar="KEY=VAL",
                           help='Parameters used to build a dictionary. '
-                               'Example: key=value or key=[list of values]. '
+                               'Example: key=value or key=value1,value2. '
                                'Use a space to provide multiple keys.')
     dict_fct.add_argument('--param',
                           help='Json file used to replace several elements '
@@ -270,7 +270,7 @@ def main():
             args.my_dict = input_param
         try:
             result_df = OPERATIONS[args.operation](
-                    df, args.my_dict, remove=args.option, op_value=args.pattern)
+                    df, args.my_dict, remove=args.option)
         except ValueError as msg:
             logging.error('{} operation failed.'.format(
                 args.operation.capitalize()))
