@@ -110,107 +110,64 @@ def main():
 
     df = load_df(args.in_csv)
     result_df = []
+    operations_args = []
 
     # Operations requires only dataframe
-    print_function = ['display', 'column', 'info']
-    single_operations = print_function + ['check_empty', 'drop_empty_column',
-                                          'drop_nan']
-
-    if args.operation in single_operations:
+    print_function = ['display', 'column', 'info', 'check_empty']
+    if args.operation in print_function:
         try:
-            result_df = OPERATIONS[args.operation](df)
+            OPERATIONS[args.operation](df)
         except ValueError as msg:
             logging.error('{} operation failed.'.format(
                     args.operation.capitalize()))
             logging.error(msg)
             return
+        exit()
+
+    # Operations requires only dataframe and save it
+    single_operations = ['drop_empty_column', 'drop_nan']
+    if args.operation in single_operations:
+        operations_args = [df]
 
     # Operations requires dataframe and dictionnary
     operations_on_column_with_dict = ['rename']
-
     if args.operation in operations_on_column_with_dict:
         if not args.my_dict:
             parser.error('This operation must be used with --my_dict.')
-        try:
-            result_df = OPERATIONS[args.operation](df, args.my_dict)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                    args.operation.capitalize()))
-            logging.error(msg)
-            return
+        operations_args = [df, args.my_dict]
 
     # Single column operations
     # Operations requires dataframe and single column
     operations_on_column = ['unique', 'remove_column']
-
     if args.operation in operations_on_column:
-        try:
-            result_df = OPERATIONS[args.operation](df, str(args.my_cols[0]))
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                    args.operation.capitalize()))
-            logging.error(msg)
-            return
+        operations_args = [df, str(args.my_cols[0])]
 
     # Operations requires dataframe, single column and specific pattern
-    operations_on_column_with_pattern = ['get_where', 'get_from',
-                                         'remove_row']
-
+    operations_on_column_with_pattern = ['get_where', 'get_from', 'remove_row']
     if args.operation in operations_on_column_with_pattern:
         if not args.pattern:
             parser.error('This operation must be used with --pattern.')
-        try:
-            result_df = OPERATIONS[args.operation](df, str(args.my_cols[0]),
-                                                   args.pattern)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                args.operation.capitalize()))
-            logging.error(msg)
-            return
+        operations_args = [df, str(args.my_cols[0]), args.pattern]
 
     # Operations requires dataframe, single column and specific value
     operations_on_value = ['lower', 'upper', 'exclude', 'select']
-
     if args.operation in operations_on_value:
         if not args.value:
             parser.error('Value operations must be used with --value.')
-        try:
-            result_df = OPERATIONS[args.operation](df, str(args.my_cols[0]),
-                                                   args.value)
-            print(result_df)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                args.operation.capitalize()))
-            logging.error(msg)
-            return
+        operations_args = [df, str(args.my_cols[0]), args.value]
 
     # Multi columns operations
     # Operations requires dataframe and multi columns
     operations_on_multi_columns = ['average', 'sum']
-
     if args.operation in operations_on_multi_columns:
-        try:
-            result_df = OPERATIONS[args.operation](df, args.my_cols)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                args.operation.capitalize()))
-            logging.error(msg)
-            return
+        operations_args = [df, args.my_cols]
 
     # Operations requires dataframe, multi columns and specific pattern
     operations_on_multi_columns_with_pattern = ['convert', 'split']
-
     if args.operation in operations_on_multi_columns_with_pattern:
         if not args.pattern:
             parser.error('This operation must be used with --pattern.')
-        try:
-            result_df = OPERATIONS[args.operation](df, args.my_cols,
-                                                   args.pattern)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                    args.operation.capitalize()))
-            logging.error(msg)
-            return
+        operations_args = [df, args.my_cols, args.pattern]
 
     # Operations requires dataframe, multi columns and dictionnary
     if args.operation == 'replace':
@@ -219,15 +176,7 @@ def main():
                          '--my_dict or --param.')
         if args.param:
             args.my_dict = input_param
-
-        try:
-            result_df = OPERATIONS[args.operation](
-                                            df, args.my_cols, args.my_dict)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                args.operation.capitalize()))
-            logging.error(msg)
-            return
+        operations_args = [df, args.my_cols, args.my_dict]
 
     # Operations requires dataframe, multi columns and dictionnary with option
     if args.operation == 'merged':
@@ -236,52 +185,38 @@ def main():
                          '--my_dict or --param.')
         if args.param:
             args.my_dict = input_param
+        operations_args = [df, args.my_cols, args.my_dict, args.option]
 
-        try:
-            result_df = OPERATIONS[args.operation](
-                                df, args.my_cols, args.my_dict, args.option)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                args.operation.capitalize()))
-            logging.error(msg)
-            return
-
+    # Operations requires dataframe, multi columns, pattern and value
     if args.operation == 'factor':
         if not args.my_cols and not args.pattern and not args.value:
             parser.error('Factor operation must be used with --my_cols and '
                          '--pattern and --value.')
         if args.param:
             args.my_dict = input_param
+        operations_args = [df, args.my_cols, args.pattern, args.value]
 
-        try:
-            result_df = OPERATIONS[args.operation](
-                                df, args.my_cols, args.pattern, args.value)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                args.operation.capitalize()))
-            logging.error(msg)
-            return
-
+    # Operations requires dataframe, dictionnary, pattern and options
     if args.operation == 'query':
         if not (args.my_dict or args.param):
             parser.error('Query operation must be used with --my_dict or '
                          ' --param.')
         if args.param:
             args.my_dict = input_param
-        try:
-            result_df = OPERATIONS[args.operation](
-                    df, args.my_dict, remove=args.option)
-        except ValueError as msg:
-            logging.error('{} operation failed.'.format(
-                args.operation.capitalize()))
-            logging.error(msg)
-            return
+        operations_args = [df, args.my_dict, args.option, args.pattern]
+
+    # Called and run operations with specific arguments required
+    try:
+        result_df = OPERATIONS[args.operation](*operations_args)
+    except ValueError as msg:
+        logging.error('{} operation failed.'.format(
+            args.operation.capitalize()))
+        logging.error(msg)
+        return
 
     # Save output dataframe
     output_df = result_df
-    if args.operation in print_function:
-        pass
-    elif len(output_df) == 0:
+    if len(output_df) == 0:
         raise ValueError('Dataframe is empty.')
     else:
         output_df.to_csv(os.path.join(args.out_dir, args.out_name + '.csv'),
