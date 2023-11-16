@@ -7,17 +7,17 @@ The supported operations are listed below.
 Most operations are column-based. To combine multiple columns, use query to
 select or remove data (--option).
 To select data :
-    > df_operations.py query data.csv Measures=['FA','MD] Bundle=AF
+    > df_operations.py query data.csv Measures=FA,MD Bundle=AF
 To remove data :
-    > df_operations.py query data.csv Measures=['FA','MD] Bundle=AF --option
+    > df_operations.py query data.csv Measures=FA,MD Bundle=AF --option
 
 Some operations to threshold, select or exclude value accept string/float/int
 value as parameters.
 > df_operations.py lower data.csv 'Section' 2
 
-Dictionary option :
-    Use --my_dict to provide a sequence of parameters in the form key=value
-    or key=[list of values].
+Dictionary option : column=row_argument
+    Use --my_dict to provide a sequence of parameters in the form ;
+    key1=value key2=value or key=value1,value2 for multiple values.
 
 > df_operations.py query Measures=[FA, ihMTR] Section=1
 
