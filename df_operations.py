@@ -219,7 +219,7 @@ def main():
     if len(output_df) == 0:
         raise ValueError('Dataframe is empty.')
     else:
-        output_df.to_csv(os.path.join(args.out_dir, args.out_name + '.csv'),
+        output_df.to_csv(os.path.join(args.out_dir, args.out_name),
                          index=False)
 
 
