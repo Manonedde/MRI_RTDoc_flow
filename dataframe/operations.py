@@ -19,6 +19,7 @@ def get_df_ops():
         ('drop_nan', drop_nan),
         ('remove_column', remove_column),
         ('rename', rename),
+        ('delete', delete),
         ('convert', convert),
         ('upper', upper),
         ('lower', lower),
@@ -57,14 +58,13 @@ def _validate_length_column(column_list, length, min_length=False):
                              'column(s).'.format(length))
 
 
-def _validate_type(dtype1: type, dtype2: type):
+def _validate_type(dtype1: type, dtype2: type, convert=False):
     """Make sure that the inputs are in the same type."""
     if dtype1 != dtype2:
         raise ValueError('Type of your value not correspond to the column '
                          'dtype.')
 
-
-def build_query(args_dict, operator, operator_value=None):
+def build_query(args_dict, operator, operator_value='=='):
     """Function to build query structure compatible with df.query()
        from dictionnary.
     """
@@ -171,7 +171,7 @@ def unique(df, column_name: str):
 
     """
     _validate_length_column([column_name], 1)
-    return  df[column_name].unique().tolist()
+    return  print(df[column_name].unique().tolist())
 
 
 def rename(df, args_dict: dict()):
@@ -186,17 +186,50 @@ def rename(df, args_dict: dict()):
     return  df.rename(columns=args_dict)
 
 
-
-def convert(df, colunm_list: list, args_type: type):
+def delete(df, args_dict: dict()):
     """
-    convert:            DF COLUMN_NAME DTYPE
-                        Usage : --my_cols --pattern
+    delete:         DF DICT
+                    Usage : --my_dict
 
-                        Converts dtype of one column.
+                    Remove rows based on combination of 2 or 3 arguments.
+                    my_dict Measures=FA Sid=sub-002
+    """
+    zargs = list(args_dict.items())
+
+    if len(zargs) > 3 or len(zargs) == 1:
+        raise ValueError('This function takes only 2 or 3 arguments combined.')
+    elif len(zargs) == 3:
+        tmp = df[(df[zargs[0][0]] == zargs[0][1]) &
+                (df[zargs[1][0]] == zargs[1][1]) &
+                (df[zargs[2][0]] == zargs[2][1])]
+    elif len(zargs) == 2:
+        tmp = df[(df[zargs[0][0]] == zargs[0][1]) &
+                (df[zargs[1][0]] == zargs[1][1])]
+    return  df.drop(tmp.index, axis=0).reset_index(drop=True)
+
+
+# Deal like this for now, need to improve it with 'int' arguments
+def convert(df, colunm_name, args_type=None, param=False):
+    """
+    convert:            DF COLUMN_NAME DTYPE or DF DICT (param option)
+                        Usage : --my_cols --pattern (int, float, str)
+                            or : --param 
+
+                        Converts dtype of one column or multiple columns when 
+                        --param is used.
 
     """
-    _validate_length_column([colunm_list], 1, min_length=True)
-    df[colunm_list] = df[colunm_list].astype(args_type)
+    _validate_length_column([colunm_name], 1, min_length=True)
+    if param:
+        conv_dict = param
+    elif args_type == 'int':
+        conv_dict = {colunm_name[0]: int}
+    elif args_type == 'float':
+        conv_dict = {colunm_name[0]: float}
+    elif args_type == 'str':
+        conv_dict = {colunm_name[0]: object}
+
+    df = df.astype(conv_dict)
     return df
 
 

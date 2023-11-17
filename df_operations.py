@@ -50,7 +50,9 @@ class ParseDictArgs(argparse.Action):
          parse_dict = {}
          for key_val in values:
              parse_key, parse_val = key_val.split("=")
-             parse_dict[parse_key] = parse_val.split(',')
+             if len(parse_val.split(',')) == 2:
+                 parse_val = parse_val.split(',')
+             parse_dict[parse_key] = parse_val
          setattr(namespace, self.dest, parse_dict)
 
 
@@ -108,6 +110,7 @@ def main():
     if args.param:
         input_param = json.load(open(args.param))
 
+
     df = load_df(args.in_csv)
     result_df = []
     operations_args = []
@@ -130,7 +133,7 @@ def main():
         operations_args = [df]
 
     # Operations requires dataframe and dictionnary
-    operations_on_column_with_dict = ['rename']
+    operations_on_column_with_dict = ['rename', 'delete']
     if args.operation in operations_on_column_with_dict:
         if not args.my_dict:
             parser.error('This operation must be used with --my_dict.')
@@ -163,7 +166,7 @@ def main():
         operations_args = [df, args.my_cols]
 
     # Operations requires dataframe, multi columns and specific pattern
-    operations_on_multi_columns_with_pattern = ['convert', 'split']
+    operations_on_multi_columns_with_pattern = ['convert', 'split'] # 
     if args.operation in operations_on_multi_columns_with_pattern:
         if not args.pattern:
             parser.error('This operation must be used with --pattern.')
@@ -215,6 +218,8 @@ def main():
         return
 
     # Save output dataframe
+    if args.operation == 'unique':
+        exit()
     output_df = result_df
     if len(output_df) == 0:
         raise ValueError('Dataframe is empty.')
