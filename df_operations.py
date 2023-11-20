@@ -141,7 +141,7 @@ def main():
 
     # Single column operations
     # Operations requires dataframe and single column
-    operations_on_column = ['unique', 'remove_column']
+    operations_on_column = ['unique', 'remove_column', 'split_by']
     if args.operation in operations_on_column:
         operations_args = [df, str(args.my_cols[0])]
 
@@ -166,7 +166,7 @@ def main():
         operations_args = [df, args.my_cols]
 
     # Operations requires dataframe, multi columns and specific pattern
-    operations_on_multi_columns_with_pattern = ['convert', 'split'] # 
+    operations_on_multi_columns_with_pattern = ['convert', 'split_col'] # 
     if args.operation in operations_on_multi_columns_with_pattern:
         if not args.pattern:
             parser.error('This operation must be used with --pattern.')
@@ -180,6 +180,15 @@ def main():
         if args.param:
             args.my_dict = input_param
         operations_args = [df, args.my_cols, args.my_dict]
+
+    # Operations requires dataframe, multi columns and dictionnary
+    if args.operation == 'replace_where':
+        if not args.my_cols and not (args.my_dict or args.param or args.pattern):
+            parser.error('Merge operation must be used with --my_cols and '
+                         '--my_dict or --param.')
+        if args.param:
+            args.my_dict = input_param
+        operations_args = [df, args.my_cols, args.pattern, args.my_dict]
 
     # Operations requires dataframe, multi columns and dictionnary with option
     if args.operation == 'merged':
@@ -223,6 +232,10 @@ def main():
     output_df = result_df
     if len(output_df) == 0:
         raise ValueError('Dataframe is empty.')
+    elif len(output_df) > 1:
+        for name, frame in zip(output_df[0], output_df[1]):
+            frame.to_csv(os.path.join(args.out_dir, name + '_' + args.out_name),
+                         index=False)
     else:
         output_df.to_csv(os.path.join(args.out_dir, args.out_name),
                          index=False)

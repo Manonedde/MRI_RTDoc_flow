@@ -31,7 +31,9 @@ def get_df_ops():
         ('average', average_on),
         ('sum', sum_on),
         ('replace', replace),
-        ('split', split),
+        ('replace_where', replace_where),
+        ('split_col', split_col),
+        ('split_by', split_by),
         ('factor', apply_factor),
         ('query', get_query),
         ('merged', merged_on)])
@@ -44,6 +46,7 @@ def get_operations_doc(ops: dict):
     for func in ops.values():
         full_doc.append(func.__doc__)
     return "".join(full_doc)
+
 
 def _validate_length_column(column_list, length, min_length=False):
     """Make sure that the number of column in the list match to the expected
@@ -64,7 +67,19 @@ def _validate_type(dtype1: type, dtype2: type, convert=False):
         raise ValueError('Type of your value not correspond to the column '
                          'dtype.')
 
-def build_query(args_dict, operator, operator_value='=='):
+
+def _convert_to_str(df):
+    """Lists original column type and converts all non-float columns to
+    structure to enable actions.
+    Function written to deal with argparser strings.
+    """
+    original_type = df.dtypes.apply(lambda x: x.name).to_dict()
+    to_convert = df.columns[(df.dtypes.values != np.dtype('float64'))]
+    df[to_convert] = df[to_convert].astype(str)
+    return original_type, df
+
+
+def _build_query(args_dict, operator, operator_value='=='):
     """Function to build query structure compatible with df.query()
        from dictionnary.
     """
@@ -194,6 +209,7 @@ def delete(df, args_dict: dict()):
                     Remove rows based on combination of 2 or 3 arguments.
                     my_dict Measures=FA Sid=sub-002
     """
+    original_dtype, df = _convert_to_str(df)
     zargs = list(args_dict.items())
 
     if len(zargs) > 3 or len(zargs) == 1:
@@ -205,31 +221,33 @@ def delete(df, args_dict: dict()):
     elif len(zargs) == 2:
         tmp = df[(df[zargs[0][0]] == zargs[0][1]) &
                 (df[zargs[1][0]] == zargs[1][1])]
-    return  df.drop(tmp.index, axis=0).reset_index(drop=True)
+
+    df = df.drop(tmp.index, axis=0).reset_index(drop=True).astype(original_dtype)
+    return  df
 
 
 # Deal like this for now, need to improve it with 'int' arguments
 def convert(df, colunm_name, args_type=None, param=False):
     """
     convert:            DF COLUMN_NAME DTYPE or DF DICT (param option)
-                        Usage : --my_cols --pattern (int, float, str)
-                            or : --param 
+                        Usage : --my_cols --pattern
+                           or : --param 
+
+                        args_type choice: 'int64', 'float64' or 'object'
 
                         Converts dtype of one column or multiple columns when 
                         --param is used.
 
     """
     _validate_length_column([colunm_name], 1, min_length=True)
-    if param:
-        conv_dict = param
-    elif args_type == 'int':
-        conv_dict = {colunm_name[0]: int}
-    elif args_type == 'float':
-        conv_dict = {colunm_name[0]: float}
-    elif args_type == 'str':
-        conv_dict = {colunm_name[0]: object}
+    original_dtype, _ = _convert_to_str(df)
 
-    df = df.astype(conv_dict)
+    if param:
+        original_dtype = param
+    elif args_type:
+        original_dtype[colunm_name[0]] = args_type
+
+    df = df.astype(original_dtype)
     return df
 
 
@@ -320,9 +338,9 @@ def sum_on(df, column_list: list):
     return df.groupby(column_list[:-1])[column_list[-1]].sum().reset_index()
 
 
-def split(df, column_list: list, row_args):
+def split_col(df, column_list: list, row_args):
     """
-    split:          DF COLUMN_LIST PATTERN_row optional
+    split_col       DF COLUMN_LIST PATTERN_row optional
                     Usage : --my_cols --pattern
 
                     Splits one column into multiple columns with delimiter or
@@ -343,6 +361,24 @@ def split(df, column_list: list, row_args):
     return df
 
 
+def split_by(df, column_name: str):
+    """
+    split_by        DF COLUMN_NAME
+                    Usage : --my_cols
+
+                    Splits dataframe into multiple dataframe based on unique
+                    arguments in specific column.
+
+    """
+    _validate_length_column([column_name], 1)
+    df_names, multi_df = [], []
+    for argument in df[column_name].unique():
+        frame = df[df[column_name] == argument]
+        multi_df.append(frame)
+        df_names.append(argument)
+    return df_names, multi_df
+
+
 def replace(df, column_name: str, args_dict: dict()):
     """
     replace:        DF COLUMN_NAME DICT
@@ -353,7 +389,34 @@ def replace(df, column_name: str, args_dict: dict()):
 
     """
     _validate_length_column([column_name], 1)
-    return df.replace({column_name[0]: args_dict})
+    original_dtype, df = _convert_to_str(df)
+    df = df.replace({column_name[0]: args_dict}).astype(original_dtype)
+    return df
+
+
+def replace_where(df, column_list: str, pattern: str, args_dict: dict()):
+    """
+    replace_where:  DF COLUMN_LIST PATTERN DICT
+                    Usage : --my_cols --pattern --my_dict
+
+                    Replaces the value provided in the dictionary on a
+                    two-column basis. A column for selecting according to
+                    a specific pattern and a column in which to replace
+                    one or more values. Dict must be in {old: new} format.
+                    COLUMN_LIST = [COLUMN_select, COLUMN_replace]
+
+                    Ex.: ['Sid', 'Session'] 'sub-001' {'1':'2'}
+
+    """
+    _validate_length_column(column_list, 2)
+    original_dtype, df = _convert_to_str(df)
+    for key, val in args_dict.items():
+        df.loc[((df[column_list[0]] == pattern) & 
+                (df[column_list[1]] == key)), column_list[1]] = val
+        
+    df = df.astype(original_dtype)
+    return df
+
 
 
 def apply_factor(df, column_list: list, row_arg, factor):
@@ -427,12 +490,12 @@ def get_query(df, args_dict: dict(), remove=False, op_if_value=None):
 
     """
     if remove:
-        return df.query(build_query(args_dict, '!=')).reset_index(drop=True)
+        return df.query(_build_query(args_dict, '!=')).reset_index(drop=True)
     elif op_if_value is not None:
-        return df.query(build_query(args_dict, '==', op_if_value)
+        return df.query(_build_query(args_dict, '==', op_if_value)
                         ).reset_index(drop=True)
     else:
-        return df.query(build_query(args_dict, '==')).reset_index(drop=True)
+        return df.query(_build_query(args_dict, '==')).reset_index(drop=True)
 
 
 def merged_on(df, column_list: list, args_dict: dict, volume=False):

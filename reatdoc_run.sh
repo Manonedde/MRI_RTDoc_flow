@@ -40,6 +40,20 @@ python $source/df_prepare_csv_scil.py merged_csv_long.csv \
                     --out_dir $output_path/convert_to_csv \
                     --rename_measure --merge_lr --longitudinal '_ses-'
 
+for file in $output_path/convert_to_csv/rtd__*; 
+    do 
+        python $source/df_operations.py delete \
+                        $output_path/convert_to_csv/rtd__average_conv.csv \
+                        $output_path/convert_to_csvrtd__average_filter.csv \
+                        --my_dict Sid=sub-003-hc Session=1
+
+        python $source/df_operations.py replace_where \
+                        $output_path/convert_to_csv/rtd__average_filter.csv \
+                        $output_path/convert_to_csv/rtd__average_replace.csv \
+                        --my_cols Sid Session --pattern sub-003-hc \
+                        --my_dict 2=1 3=2 4=3 5=4 6=5
+done
+
 echo -e "Generate figures"
 mkdir -p $output_path/averages $output_path/profile \
                         $output_path/heatmap $output_path/correlations
