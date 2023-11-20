@@ -8,11 +8,11 @@ order_plot_dict = {
                         'FA-FWcorrected', 'RD-FWcorrected',
                         'MD-FWcorrected', 'AD-FWcorrected'],
                     'FW': ['FW'],
-                    'FODF': ['AFD_total', 'NuFO', 'AFD', 'AFD_sum'],
+                    'FODF': ['AFD_total', 'NuFO'],
                     'HARDI': ['GFA', 'APower'],
                     'NODDI': ['ICVF', 'OD', 'ECVF', 'ISOVF'],
                     'MTI': ['ihMTR', 'MTR', 'MTsat', 'ihMTsat'],
-                    'Streamlines': ['Volume', 'Count', 'Lenght']}
+                    'Streamlines': ['Volume', 'Count', 'Length']}
 
 average_parameters_dict = {
     "FA": [0, 0.8], "MD": [0, 0.0016], "RD": [0, 0.0016], "AD": [0, 0.0018],
@@ -23,12 +23,12 @@ average_parameters_dict = {
     "AFD_total": [0, 1], "NuFO": [0, 3], "AFD": [0, 2], "AFD_sum": [0, 2],
     "AFD fixel": [0, 1],
     "Radial ODF": [0, 1], "GFA": [0, 0.8], "APower": [0, 10],
-    "Volume": [], "Count": [], "Lenght": [],
     "MTR": [0, 30], "ihMTR": [0, 18], "MTsat": [0, 6], "ihMTsat": [0, 0.4],
-    "ihMTdR1sat": [0, 0.4]}
+    "ihMTdR1sat": [0, 0.4],
+    "Volume": [0,300000], "Count": [0, 60000], "Length": [20, 300]}
 
 ######### Profile setting #####
-order_plot_profile = ['DTI', 'DTI-FW', 'FW', 'HARDI', 'MTI', 'NODDI']
+order_plot_profile = ['DTI', 'DTI-FW', 'FW', 'FODF', 'HARDI', 'MTI', 'NODDI']
 dict_plot_profile = {"DTI": [0, 0.8], "DTI-FW": [0, 0.8], "FW": [0, 0.7],
                      "FODF": [0, 3], "HARDI": [0, 3], "MTI": [0, 30],
                      "NODDI": [0, 1]}
@@ -38,8 +38,8 @@ new_order_measure = [
     'FA', 'AD', 'MD', 'RD',
     'FA-FWcorrected', 'AD-FWcorrected', 'MD-FWcorrected', 'RD-FWcorrected',
     'FW',
-    'GFA', 'AFD_total', 'NuFO',
-    'ICVF', 'ISOVF', 'OD',
+    'AFD_total', 'NuFO',
+    'ICVF', 'ISOVF', 'OD', 'ECVF',
     'MTR', 'MTsat', 'ihMTR', 'ihMTsat']
 
 # Metrics color list

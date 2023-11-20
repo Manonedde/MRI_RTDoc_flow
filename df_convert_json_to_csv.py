@@ -72,10 +72,10 @@ def main():
     # Load, reshape and save multi json data
     tmp_df = []
     for curr_json in args.in_json:
-        if 'stats' in curr_json:
-            print("The lesion_stats and lesion_streamlines_stats jsons\n"
-                  "cannot be processed with this script. \n"
-                  "Remove these jsons from the input.\n")
+        if ('lesion_stats' or 'lesion_streamlines_stats') in curr_json:
+            raise ValueError("The lesion_stats and lesion_streamlines_stats\n"
+                             " jsons cannot be processed with this script. \n"
+                             "Remove these jsons from the input.\n")
 
         key_columns = os.path.splitext(os.path.basename(curr_json))[0]
         if args.out_csv is None:

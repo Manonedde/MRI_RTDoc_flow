@@ -74,15 +74,16 @@ def check_df_for_columns(df, split_filter=None, profile=None):
         raise ValueError("The csv not contains Method column. "
                          "\nRename column or add it.")
 
-    if len(df['Method'].unique().tolist()) > 1 and split_filter is None:
+    if len(df.Method.unique().tolist()) > 1 and split_filter is None and df.Method.unique().tolist()[0] != 'Streamlines':
         raise ValueError('Multiple method categories are found in csv files.\n'
-                         'Please provide a csv file containing single Method'
-                         'or use --specific_method or --split_by options.')
+                        'Please provide a csv file containing single Method'
+                        'or use --specific_method or --split_by options.')
 
-    if len(df['Statistics'].unique().tolist()) > 1:
-        raise ValueError('Multiple statistics are found in csv files.\n '
-                         'Please provide a csv file containing single Statistic'
-                         ' or use --specific_stats options.')
+    if len(df.Statistics.unique().tolist()) > 1:
+        if not ('count' or 'mean' or 'volume') in df.Statistics.unique().tolist():
+            raise ValueError('Multiple statistics are found in csv files.\n '
+                            'Please provide a csv file containing single Statistic'
+                            ' or use --specific_stats options.')
 
 
 def check_item_in_dict(df, check_column, dict_parameters, use_data=False):

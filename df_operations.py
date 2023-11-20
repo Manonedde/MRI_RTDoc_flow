@@ -232,7 +232,7 @@ def main():
     output_df = result_df
     if len(output_df) == 0:
         raise ValueError('Dataframe is empty.')
-    elif len(output_df) > 1:
+    elif args.operation == 'split_by':
         for name, frame in zip(output_df[0], output_df[1]):
             frame.to_csv(os.path.join(args.out_dir, name + '_' + args.out_name),
                          index=False)

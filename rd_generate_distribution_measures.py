@@ -38,10 +38,10 @@ def _build_arg_parser():
                    help='Output filename to save plot.')
     p.add_argument('--out_dir',
                    help='Output directory for the labeled mask.')
-    p.add_argument('--rbx_version', default='v1', choices={'v1', 'v10'},
+    p.add_argument('--rbx_version', choices={'v1', 'v10'},
                    help='Rbx flow version to segment bundles.'
                         '[%(default)s]')
-    p.add_argument('--use_stats', default='mean',
+    p.add_argument('--use_stats',
                    help='Use to select a specific statistic. '
                         '[%(default)s]')
     p.add_argument('--specific_method',
@@ -96,10 +96,12 @@ def main():
 
     # Load and filter Dataframe
     df = load_df(args.in_csv)
-    df = df.loc[(df.Statistics == args.use_stats) &
-                (df.rbx_version == args.rbx_version)].reset_index(drop=True)
 
-    if args.specific_method is not None:
+    if args.use_stats:
+        df = df.loc[df.Statistics == args.use_stats].reset_index(drop=True)
+    if args.rbx_version:
+         df = df[(df.rbx_version == args.rbx_version)].reset_index(drop=True)
+    if args.specific_method:
         df = df[df['Method'] == args.specific_method].reset_index(drop=True)
 
     if args.custom_colors is not None:
@@ -112,10 +114,10 @@ def main():
     # check Dataframe shape before plot
     check_df_for_columns(df, split_filter=args.split_by)
     df = check_agreement_with_dict(df, 'Bundles', bundle_colors,
-                                   ignore_lenght=True, 
+                                   ignore_lenght=True,
                                    rm_missing=args.filter_missing)
     df = check_agreement_with_dict(df, 'Method', order_plot_dict,
-                                   rm_missing=args.filter_missing, 
+                                   rm_missing=args.filter_missing,
                                    ignore_lenght=True)
 
     if args.split_by:
@@ -138,7 +140,9 @@ def main():
                     if metric in scaling_metrics:
                         custom_yaxis[metric][1] *= args.apply_factor
 
-            col_wrap = len(frame['Measures'].unique().tolist()) / 2
+            col_wrap = 0
+            if len(frame['Measures'].unique()) > 2:
+                col_wrap = len(frame['Measures'].unique().tolist()) / 2
 
             fig = interactive_distribution_plot(
                 frame, "Bundles", "Value", "Bundles", colormap=bundle_colors,
@@ -176,7 +180,9 @@ def main():
                 if metric in scaling_metrics:
                     custom_yaxis[metric][1] *= args.apply_factor
 
-        col_wrap = len(df['Measures'].unique().tolist()) / 2
+        col_wrap = 0
+        if len(df['Measures'].unique()) > 2:
+            col_wrap = len(df['Measures'].unique().tolist()) / 2
 
         fig = interactive_distribution_plot(
             df, "Bundles", "Value", "Bundles", colormap=bundle_colors,

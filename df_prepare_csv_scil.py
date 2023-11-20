@@ -61,7 +61,7 @@ def _build_arg_parser():
                            help='List of metrics where a factor must be '
                                 'applied.\nBy default, is applied on Diffusion '
                                 'Measure (including FW-corrected).')
-    set_shape.add_argument('--apply_factor', type=int, default=100,
+    set_shape.add_argument('--apply_factor', type=int,
                            help='Factor applied on MRI measure for plot. '
                                 ' [%(default)s].')
     set_shape.add_argument('--merge_lr', action='store_true',
@@ -89,17 +89,18 @@ def main():
     # Load Data frame without
     df = pd.read_csv(args.in_csv)
 
-    # Drop index column and rename some pattern from columns
-    for key in replace_dict:
-        df[key] = df[key].replace(replace_dict[key],'', regex=True)
-
+    df.loc[df.metrics.str.contains('length'), 'stats'] = df['metrics']
     df.loc[df.metrics.str.contains('volume'), 'stats'] = 'volume'
     df.loc[df.metrics.str.contains('count'), 'stats'] = 'count'
-    df['section'] = df.section.replace(np.nan, 0, regex=True)
-    df['section'] = df['section'].astype(int)
+    df.section = df.section.replace(np.nan, 0, regex=True)
+    df.section = df['section'].astype(int)
 
     df.loc[df.roi.str.contains('v10'),'rbx_version']= 'v10'
     df.loc[~df.roi.str.contains('v10'),'rbx_version']= 'v1'
+
+    # Drop index column and rename some pattern from columns
+    for key in replace_dict:
+        df[key] = df[key].replace(replace_dict[key],'', regex=True)
 
     # Filtering dataframe
     if args.rm_rbx:
