@@ -25,13 +25,13 @@ average_parameters_dict = {
     "Radial ODF": [0, 1], "GFA": [0, 0.8], "APower": [0, 10],
     "MTR": [0, 30], "ihMTR": [0, 18], "MTsat": [0, 6], "ihMTsat": [0, 0.4],
     "ihMTdR1sat": [0, 0.4],
-    "Volume": [0,300000], "Count": [0, 60000], "Length": [20, 300]}
+    "Volume": [0,250000], "Count": [0, 65000], "Length": [0, 220]}
 
 ######### Profile setting #####
 order_plot_profile = ['DTI', 'DTI-FW', 'FW', 'FODF', 'HARDI', 'MTI', 'NODDI']
 dict_plot_profile = {"DTI": [0, 0.8], "DTI-FW": [0, 0.8], "FW": [0, 0.7],
                      "FODF": [0, 3], "HARDI": [0, 3], "MTI": [0, 30],
-                     "NODDI": [0, 1]}
+                     "NODDI": [0, 1], 'Streamlines': [0, 100000]}
 
 # Reorder heatmap matrice 'ECVF',
 new_order_measure = [
@@ -58,7 +58,8 @@ metric_colors = {
     'AD-FWcorrected': '#E9EC38', 'FA-FWcorrected': '#FC6666',
     'MD-FWcorrected': '#E6891E', 'RD-FWcorrected': '#FEBE17',
     'adt': '#E9EC38', 'fat': '#FC6666', 'mdt': '#E6891E', 'rdt': '#FEBE17',
-    'Volume': '#333333', 'Count': '#770302'}
+    'Volume': '#333333', 'Count': '#770302', 'volume': '#333333',
+    'count': '#770302'}
 
 
 # Bundles color list

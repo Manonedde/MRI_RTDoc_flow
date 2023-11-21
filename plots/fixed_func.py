@@ -95,3 +95,47 @@ def scatter_with_regression_line(x,y, y_line, xlabel='', ylabel='',figtitle='',
     plt.title(fig_title)
 
     return fig, ax
+
+
+def ridge_profile(df, x_col, y_col, multi_row, font_size=22, title_loc=0.98,
+                colormap="Set2", line_width=2, transparency=0.6,
+                x_label='', title='',,height = 1.2, aspect = 9,
+                y_lim=False,x_lim=False, len_x_ticks=20, horizontal_space=-.7):
+    
+    sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0),
+                                 "axes.linewidth":2, "figure.dpi":200})
+    palette = sns.color_palette(colormap, len_x_ticks+1)
+
+    # create a grid with a row for each Session
+    fig = sns.FacetGrid(df, palette=palette, row=multi_row, hue=multi_row,
+                        aspect=aspect, height=height)
+
+    fig.map_dataframe(sns.lineplot, x=x_col, y=y_col, alpha=1,
+                      linewidth=line_width, clip_on=False)
+    fig.map(plt.fill_between, x_col, y_col, alpha=transparency)
+
+    if y_lim or x_lim:
+        fig.set(ylim=y_lim)
+        fig.set(xlim=x_lim)
+
+    # function to draw labels
+    def label(x, color, label):
+        ax = plt.gca() #get current axis
+        ax.text(-0.1, .25, label, color='black', fontsize=13,
+                ha="left", va="center", transform=ax.transAxes)
+    # iterate grid to plot labels
+    fig.map(label, "roi")
+    fig.fig.subplots_adjust(hspace=horizontal_space)
+    # remove subplot titles
+    fig.set_titles("")
+
+    # remove yticks and set xlabel
+    fig.set(yticks=[], xticks=np.linspace(1, len_x_ticks, len_x_ticks))
+    # remove left spine
+    fig.despine(bottom=True,left=True)
+    # set title
+    plt.suptitle(title, y=title_loc)
+    plt.xlabel(x_label, fontsize=font_size+2)
+    plt.xticks(fontsize=font_size)
+
+    return fig

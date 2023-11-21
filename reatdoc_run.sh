@@ -67,7 +67,8 @@ for file in $output_path/convert_to_csv/rtd__*;
                 $output_path/convert_to_csv/rtd__average_volume_mean.csv \
                 $output_path//convert_to_csv/rtd__average_volume_mean.csv\
                 --my_cols Statistics --pattern max
-        
+   python df_operations.py remove_row ~/Data/readthedoc_results/convert_to_csv/rtd__profile_replace.csv ~/Data/readthedoc_results/convert_to_csv/rtd__profile_mean.csv --my_cols Statistics --pattern std
+    python df_operations.py remove_row ~/Data/readthedoc_results/convert_to_csv/rtd__profile_replace.csv ~/Data/readthedoc_results/convert_to_csv/rtd__profile_mean.csv --my_cols Statistics --pattern volume    
 done
 
 echo -e "Generate figures"
@@ -92,7 +93,15 @@ python $source/rd_generate_distribution_measures.py \
 python $source/rd_generate_measures_profile.py \
                 $output_path/convert_to_csv/rtd_profile.csv \
                 --out_dir $output_path/profile_figures
+python rd_generate_measures_profiles.py $output_path/convert_to_csv/rtd__profile_replace.csv \
+        Section Value 'Bundle sections' --out_dir $output_path/profile/ \
+        --filter_missing --split_by Bundles --use_as_slider Session
 
+python rd_generate_measures_profiles.py $output_path/convert_to_csv/rtd__profile_volume.csv \
+        Section Value Profile --out_dir $output_path/profile/ \
+        --out_name volume_profile --filter_missing --split_by Bundles \
+        --use_as_slider Session
+        
 echo -e "Ending process"
 
 

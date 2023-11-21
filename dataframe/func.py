@@ -75,6 +75,7 @@ def apply_factor_to_metric(df, metric, factor, column='metrics'):
 def merged_left_right_data(df, group_col):
     """
     Function to merge left and right data.
+    For lesion, volume not mean but sum() between left and right.
     """
     if 'lesion_label' in df.columns.tolist():
         lesion_label = df.loc[df.metrics == 'lesion_volume']
@@ -82,11 +83,11 @@ def merged_left_right_data(df, group_col):
     df['roi'] = df.roi.replace({'_L': '', '_R': ''}, regex=True)
 
     # Diffusion data = group by mean()
-    diffusions = df.loc[~(df.Method.isin(['Lesion', 'Streamlines']))]
+    diffusions = df.loc[~(df.Method.isin(['Lesion']))]
     diffusions = diffusions.groupby(group_col)['value'].mean().reset_index()
 
     # Volume data = group by sum() of left and right volumes
-    volumes = df.loc[df.Method.isin(['Lesion', 'Streamlines'])]
+    volumes = df.loc[df.Method.isin(['Lesion'])]
     volumes = volumes.groupby(group_col)['value'].sum().reset_index()
 
     if 'lesion_label' in df.columns.tolist():

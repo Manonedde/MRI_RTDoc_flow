@@ -41,7 +41,7 @@ def _build_arg_parser():
     frames.add_argument('--use_as_slider',
                         help='Column name. Generates a heatmap for each unique'
                              ' argument corresponding to the column.')
-    frames.add_argument('--use_stats', default='mean',
+    frames.add_argument('--use_stats',
                         help='Use to select a specific statistic. '
                              '[%(default)s]')
     frames.add_argument('--rbx_version', default='v1', choices={'v1', 'v10'},
@@ -56,7 +56,7 @@ def _build_arg_parser():
     scatter = p.add_argument_group(title='Scatter plot options')
     scatter.add_argument('--plot_size', nargs=2, type=int,
                          metavar=('p_width', 'p_height'),
-                         default=(1100, 800),
+                         default=(900, 600),
                          help='Width and Height of Scatter Plot. ')
     scatter.add_argument('--custom_y',
                          help='Use dictionary provided to set x and y axis '
@@ -91,8 +91,11 @@ def main():
 
     # Load and filter Dataframe
     df = load_df(args.in_csv)
-    df = df.loc[(df.Statistics == args.use_stats) &
-                (df.rbx_version == args.rbx_version)].reset_index(drop=True)
+
+    if args.use_stats:
+        df = df.loc[df.Statistics == args.use_stats].reset_index(drop=True)
+    if args.rbx_version:
+         df = df[(df.rbx_version == args.rbx_version)].reset_index(drop=True)
 
     if args.custom_colors is not None:
         metrics_colors = args.custom_colors
@@ -117,7 +120,7 @@ def main():
         for frame, curr_name in zip(multi_df, df_names):
             curr_title = "Profil of " + curr_name
             frame = frame.groupby([args.plot_args[0], args.use_as_slider,
-                                   'Session','Measures']
+                                   'Measures']
                                    )[args.plot_args[1]].mean().reset_index()
 
             fig = interactive_lineplot(
@@ -130,9 +133,32 @@ def main():
 
             # Save figure
             save_figures_as(fig, args.out_dir, 
-                            curr_name + args.out_name + '.html',
+                            curr_name + '_' + args.out_name + '.html',
                             is_slider=args.use_as_slider,
                             save_as_png=args.save_as_png)
+    else:
+        single_method = df['Method'].unique().tolist()[0]
+        curr_title = "Profil of " + single_method
+
+        if args.longitudinal:
+            df = df.groupby([args.plot_args[0], args.use_as_slider,
+                             'Measures']
+                             )[args.plot_args[1]].mean().reset_index()
+
+        fig = interactive_lineplot(
+                    df, args.plot_args[0], args.plot_args[1],
+                    color_col='Measures', frame=args.use_as_slider,
+                    custom_y_dict=custom_yaxis, x_label=args.plot_args[2],
+                    group = None, y_label=curr_name,
+                    kwgs=dict(args.plot_kwargs),
+                    colormap=metrics_colors, title=curr_title)
+
+        # Save figure
+        save_figures_as(fig, args.out_dir, 
+                        args.out_name + '.html',
+                        is_slider=args.use_as_slider,
+                        save_as_png=args.save_as_png)
+
 
 
 if __name__ == '__main__':
