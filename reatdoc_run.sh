@@ -33,8 +33,7 @@ echo -e "Generate compile CSV"
 mkdir $output_path/convert_to_csv
 
 python $source/df_convert_json_to_csv.py *json --save_merge_df \
-                    --out_dir $output_path/convert_to_csv \
-                    --save_merge_df
+                    --out_dir $output_path/convert_to_csv 
 
 python $source/df_prepare_csv_scil.py merged_csv_long.csv \
                     --out_dir $output_path/convert_to_csv \
