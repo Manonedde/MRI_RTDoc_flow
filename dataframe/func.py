@@ -239,11 +239,10 @@ def generate_summary_table(df, by_cols=['Measures', 'Value'], round_at=3,
     Return table that could be save using .to_csv() or .to_latex() function.
     """
 
-    summary_table = np.round(df.groupby(by_cols[0])[by_cols[1]].describe(),
-                             round_at)
+    summary_table = df.groupby(by_cols[0])[by_cols[1]].describe()
     summary_table.insert(8, 'range', summary_table['max'] -
                          summary_table['min'])
-    print(summary_table)
+    summary_table = np.round(summary_table, round_at)
     
     col_name = ['Count', 'Mean', 'STD', 'Min',
                 'Inferior Quartile 25%',  'Median',

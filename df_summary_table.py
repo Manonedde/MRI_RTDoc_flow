@@ -6,6 +6,7 @@ Generates summary table from data included in the input CSV.
 """
 
 import argparse
+import os
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from dataframe.utils import load_df
