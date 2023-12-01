@@ -23,6 +23,8 @@ def _build_arg_parser():
                    help='Output filename to save plot.')
     p.add_argument('--out_dir',
                    help='Output directory for CSV.')
+    p.add_argument('--sort_by',
+                   help='Column names used to sort index of describe table.')
     p.add_argument('--on_columns', default=['Measures', 'Value'],
                    help='List of column names used to compute summary.')
     p.add_argument('--select_columns',
@@ -53,7 +55,10 @@ def main():
                                    round_at=args.round_at,
                                    select_stats_col=args.select_columns,
                                    custom_col_name=args.rename_columns)
-    
+
+    if args.sort_by:
+        table = table.reindex(df[args.sort_by].unique().tolist())
+
     table.to_csv(os.path.join(args.out_dir, args.out_name))
 
 
