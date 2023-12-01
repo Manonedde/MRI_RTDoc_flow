@@ -429,13 +429,15 @@ def apply_factor(df, column_list: list, row_arg, factor):
                     COLUMNS_LIST = [COLUMN_NAME, NUMERIC_COLUMN]
 
     """
+
     _validate_length_column(column_list, 2)
     tmp = df[(df[column_list[0]] == row_arg)]
     if tmp.empty is True:
         raise ValueError('No data are found.')
     else:
         df.loc[(df[column_list[0]] == row_arg),
-               column_list[1]] = tmp[column_list[1]] * factor
+               column_list[1]] = tmp[column_list[1]] * int(factor)
+    return df
 
 
 def get_where(df, column_name: str, string_arg: str):

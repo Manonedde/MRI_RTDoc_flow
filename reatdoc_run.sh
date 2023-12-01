@@ -56,13 +56,13 @@ python $source/df_operations.py replace_where \
                 --my_dict 2=1 3=2 4=3 5=4 6=5 -f
 
 mkdir $output_path/csv_data
-for file in $output_path/convert_to_csv/rtd__*replace.csv;
+for curr_file in $output_path/convert_to_csv/rtd__*replace.csv;
     do 
-    $file = ${file/replace.csv/''}
+    $file = ${curr_file/replace.csv/''}
 
 # Measures csv : Remove volume data and std from mean csv
         python df_operations.py remove_row \
-                $output_path/csv_data/$file \
+                $output_path/csv_data/$curr_file \
                 $output_path/csv_data/${file}_measures.csv \
                 --my_cols Statistics --pattern volume
 
@@ -95,21 +95,48 @@ for file in $output_path/convert_to_csv/rtd__*replace.csv;
 
 done
 
+cp $output_path/csv_data/rtd__average_measures.csv $output_path/csv_data/rtd__average_measures_factor.csv
+cp $output_path/csv_data/rtd__profile_measures.csv $output_path/csv_data/rtd__profile_measures_factor.csv
+
+for measure in 'AD' 'RD','MD' 'MD-FWcorrected', 'MD-FWcorrected','MD-FWcorrected';
+        do
+        python $source/df_operations.py factor \
+                $output_path/csv_data/rtd__average_measures_factor.csv \
+                rtd__average_measures_factor.csv --my_cols Measures Value \
+                --value 100 --out_dir $output_path/csv_data/ --pattern $measure
+
+        python $source/df_operations.py factor \
+                $output_path/csv_data/rtd__profile_measures_factor.csv \
+                rtd__average_measures_factor.csv --my_cols Measures Value \
+                --value 100 --out_dir $output_path/csv_data/ --pattern $measure
+done
+
+
 echo -e "Generates bundle CSVs"
-
 mkdir -p $output_path/bundles
-python df_operations.py split_by $output_path/csv_data/rtd_average_measures.csv\
-        $output_path/bundles --my_cols Bundles
 
-python df_operations.py split_by $output_path/csv_data/rtd_profile_measures.csv\
-        $output_path/bundles --my_cols Bundles
+python $source/df_operations.py split_by $output_path/csv_data/rtd_average_measures.csv\
+        average_measures.csv --out_dir $output_path/bundles --my_cols Bundles
 
-python df_operations.py split_by $output_path/csv_data/rtd_average_volume.csv\
-        $output_path/bundles --my_cols Bundles
+python $source/df_operations.py split_by $output_path/csv_data/rtd_profile_measures.csv\
+        profile_measures.csv --out_dir $output_path/bundles --my_cols Bundles
 
-python df_operations.py split_by $output_path/csv_data/rtd_profile_volume.csv\
-        $output_path/bundles --my_cols Bundles
+python $source/df_operations.py split_by $output_path/csv_data/rtd_average_volume.csv\
+        average_volume.csv --out_dir $output_path/bundles --my_cols Bundles
 
+python $source/df_operations.py split_by $output_path/csv_data/rtd_profile_volume.csv\
+        profile_volume.csv --out_dir $output_path/bundles --my_cols Bundles
+
+echo -e "Generates summary Tables"
+mkdir -p $output_path/tables
+for curr_file in $output_path/convert_to_csv/rtd__*replace.csv;
+    do 
+    $file = ${curr_file/.csv/''}
+    
+    python $source/df_summary_table.py $output_path/bundles/AF___average.csv \
+           --out_name ${file}_table.csv --out_dir $output_path/tables \
+           --sort_by 'Measures'
+done
 
 echo -e "Generate figures"
 # Creates folder to save results
