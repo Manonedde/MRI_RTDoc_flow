@@ -74,29 +74,29 @@ echo -e "Generate figures"
 mkdir -p $output_path/averages $output_path/profile \
                         $output_path/heatmap $output_path/correlations
 
-python $source/rd_generate_heatmap.py \
+python $source/rd_heatmap.py \
                 $output_path/convert_to_csv/rtd_average.csv \
                 --out_dir $output_path/heatmap \
                 --use_as_slider 'Session' --reorder_measure --filter_missing \
                 --longitudinal
 
-python $source/rd_generate_correlation_plot.py \
+python $source/rd_correlation_with_menu.py \
                 $output_path/convert_to_csv/rtd_average.csv \
                 --out_dir $output_path/averages_figures --longitudinal
 
-python $source/rd_generate_distribution_measures.py \
+python $source/rd_distribution_measures.py \
                 $output_path/convert_to_csv/rtd_average.csv \
                 --out_dir $output_path/averages_figures \
                 --split_by 'Method' --filter_missing
 
-python $source/rd_generate_measures_profile.py \
+python $source/rd_profiles_measures.py \
                 $output_path/convert_to_csv/rtd_profile.csv \
                 --out_dir $output_path/profile_figures
-python rd_generate_measures_profiles.py $output_path/convert_to_csv/rtd__profile_replace.csv \
+python rd_profiles_measures.py $output_path/convert_to_csv/rtd__profile_replace.csv \
         Section Value 'Bundle sections' --out_dir $output_path/profile/ \
         --filter_missing --split_by Bundles --use_as_slider Session
 
-python rd_generate_measures_profiles.py $output_path/convert_to_csv/rtd__profile_volume.csv \
+python rd_profiles_measures.py $output_path/convert_to_csv/rtd__profile_volume.csv \
         Section Value Profile --out_dir $output_path/profile/ \
         --out_name volume_profile --filter_missing --split_by Bundles \
         --use_as_slider Session
