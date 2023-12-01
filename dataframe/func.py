@@ -214,8 +214,8 @@ def check_reorder_measure(df, reorder_metrics_list, rm_missing_metrics=False):
 
 def generate_summary_table(df, by_cols=['Measures', 'Value'], round_at=3,
                            select_stats_col=[
-                               'mean', 'std', '50%', 'min', 'max'],
-                           custom_col_name='',):
+                               'Mean', 'STD', 'Median', 'Min', 'Max','Range'],
+                           custom_col_name=False):
     """
     Generate a summary table from Dataframe.
 
@@ -230,8 +230,9 @@ def generate_summary_table(df, by_cols=['Measures', 'Value'], round_at=3,
     round_at :          Decimal places after the decimal point
     select_stats_col :  Use to select only certain columns. The order provided
                         will reorganize the table columns accordingly.
-                        The complete list is : ['count', 'mean', 'std', 'min',
-                        '25%', '50%', '75%', 'max', 'range'].
+                        The complete list is : ['Count', 'Mean', 'STD', 'Min',
+                           'Inferior Quartile 25%',  'Median',
+                           'Superior Quartile 75%', 'Max', 'Range'].
     custom_col_name :   Use to rename columns corresponding to those in
                         select_stats_col. By default, all columns are renamed.
 
@@ -242,16 +243,19 @@ def generate_summary_table(df, by_cols=['Measures', 'Value'], round_at=3,
                              round_at)
     summary_table.insert(8, 'range', summary_table['max'] -
                          summary_table['min'])
+    print(summary_table)
+    
+    col_name = ['Count', 'Mean', 'STD', 'Min',
+                'Inferior Quartile 25%',  'Median',
+                'Superior Quartile 75%', 'Max', 'Range']
+    
+    if custom_col_name:
+        col_name = custom_col_name
+    
+    summary_table.columns = col_name
 
     if select_stats_col:
         summary_table = summary_table[select_stats_col]
-
-    if custom_col_name == '':
-        custom_col_name = ['Count', 'Mean', 'STD', 'Min',
-                           'Inferior Quartile 25%',  'Median',
-                           'Superior Quartile 75%', 'Max', 'Range']
-
-    summary_table.columns = custom_col_name
 
     return summary_table
 

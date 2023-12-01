@@ -1,5 +1,7 @@
 .work/
 *.pyc
 *.vsix
-
+.DS_Store
 *.code-workspace
+
+*.pdf
