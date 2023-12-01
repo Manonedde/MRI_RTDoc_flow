@@ -89,6 +89,11 @@ python $source/rd_distribution_measures.py \
                 --out_dir $output_path/averages_figures \
                 --split_by 'Method' --filter_missing
 
+python $source/rd_boxplot.py \
+                $output_path/convert_to_csv/rtd_average.csv \
+                --out_dir $output_path/averages_figures \
+                --split_by 'Method' --filter_missing
+
 python $source/rd_profiles_measures.py \
                 $output_path/convert_to_csv/rtd_profile.csv \
                 --out_dir $output_path/profile_figures

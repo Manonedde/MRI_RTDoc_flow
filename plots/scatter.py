@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 from plots.utils import save_trend_from_plot, add_ols_info, fetch_ols_results
 
 
-def interactive_distribution_plot(
+def interactive_distribution_scatter(
         df, x_column, y_column, color_column, figtitle='', colormap='Set2',
         f_column=None, f_row=None, column_wrap=0, bgcolor="white",
         column_spacing=0.09, row_spacing=0.09, title_size=20, font_size=15,

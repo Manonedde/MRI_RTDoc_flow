@@ -1,0 +1,5 @@
+.work/
+*.pyc
+*.vsix
+
+*.code-workspace

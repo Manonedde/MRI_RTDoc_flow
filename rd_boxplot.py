@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Script to plot distribution of data included in the input CSV.
+Generates boxplot from data included in the input CSV.
 CSV file must be the output of rdt_prepare_csv*.py
 with --split_by_method option if you're not filter your dataframe.
 
@@ -10,7 +10,7 @@ By default, MRI measurement ranges are defined in the parameter file.
 Use the --apply_factor option if you have applied a factor to individual 
 measurements, to adapt the ranges from the parameter file.
 
-rdt_generate_mean_measures_across_bundles_plot.py dti.csv
+rd_boxplot.py data.csv
 """
 
 import argparse
@@ -23,7 +23,7 @@ from plots.parameters import (average_parameters_dict, order_plot_dict,
                               bundle_dict_color_v1, bundle_dict_color_v10)
 from plots.utils import (check_df_for_columns, check_agreement_with_dict,
                          save_figures_as)
-from plots.scatter import interactive_distribution_scatter
+from plots.boxplot import interactive_distribution_box
 
 
 def _build_arg_parser():
@@ -33,7 +33,7 @@ def _build_arg_parser():
     p.add_argument('in_csv',
                    help='CSV MRI data.')
 
-    p.add_argument('--out_name', default='_measurement_distribution',
+    p.add_argument('--out_name', default='_measurement_boxplot',
                    help='Output filename to save plot.')
     p.add_argument('--out_dir',
                    help='Output directory for the labeled mask.')
@@ -122,7 +122,7 @@ def main():
     if args.split_by:
         multi_df, df_names = split_df_by(df, args.split_by)
         for frame, curr_method in zip(multi_df, df_names):
-            curr_title = "Distribution of " + curr_method + " measurements"
+            curr_title = "Boxplot of " + curr_method + " measurements"
 
             if args.custom_order and args.custom_y is not None:
                 custom_order = args.custom_order[curr_method]
@@ -143,7 +143,7 @@ def main():
             if len(frame['Measures'].unique()) > 2:
                 col_wrap = len(frame['Measures'].unique().tolist()) / 2
 
-            fig = interactive_distribution_scatter(
+            fig = interactive_distribution_box(
                 frame, "Bundles", "Value", "Bundles", colormap=bundle_colors,
                 f_column="Measures", column_wrap=int(col_wrap),
                 custom_order={"Measures": custom_order}, figtitle=curr_title,
@@ -183,7 +183,7 @@ def main():
         if len(df['Measures'].unique()) > 2:
             col_wrap = len(df['Measures'].unique().tolist()) / 2
 
-        fig = interactive_distribution_scatter(
+        fig = interactive_distribution_box(
             df, "Bundles", "Value", "Bundles", colormap=bundle_colors,
             f_column="Measures", column_wrap=int(col_wrap),
             custom_order={"Measures": custom_order}, figtitle=curr_title,
