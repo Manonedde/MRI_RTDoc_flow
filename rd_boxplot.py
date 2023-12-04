@@ -51,6 +51,8 @@ def _build_arg_parser():
                         ' argument in slected column. ')
     p.add_argument('--filter_missing', action='store_true',
                    help='Use to filter missing metrics when you reorder.')
+    p.add_argument('--factor', type=int,
+                   help='Use to update parameter if you apply a factor on measures.')
 
     scatter = p.add_argument_group(title='Scatter plot options')
     scatter.add_argument('--plot_size', nargs=2, type=int,
@@ -134,10 +136,10 @@ def main():
                 custom_order = order_plot_dict[curr_method]
                 custom_yaxis = average_parameters_dict
 
-            if args.apply_factor:
+            if args.factor:
                 for metric in custom_order:
                     if metric in scaling_metrics:
-                        custom_yaxis[metric][1] *= args.apply_factor
+                        custom_yaxis[metric][1] *= int(args.factor)
 
             col_wrap = 0
             if len(frame['Measures'].unique()) > 2:
@@ -174,10 +176,10 @@ def main():
             custom_order = order_plot_dict[single_method]
             custom_yaxis = average_parameters_dict
 
-        if args.apply_factor:
+        if args.factor:
             for metric in custom_order:
                 if metric in scaling_metrics:
-                    custom_yaxis[metric][1] *= args.apply_factor
+                    custom_yaxis[metric][1] *= int(args.factor)
 
         col_wrap = 0
         if len(df['Measures'].unique()) > 2:
