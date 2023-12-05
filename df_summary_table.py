@@ -31,7 +31,8 @@ def _build_arg_parser():
     p.add_argument('--out_dir',
                    help='Output directory for CSV.')
     p.add_argument('--sort_by', nargs=1,
-                   help='Column names used to sort index of describe table.')
+                   help='Column names used to sort index of describe table.'
+                        '\nNot uses with multiple index.')
     p.add_argument('--on_columns', nargs='+', default=['Measures', 'Value'],
                    help='List of column names used to compute summary.')
     p.add_argument('--select_columns', nargs='+',
