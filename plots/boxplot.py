@@ -112,5 +112,12 @@ def interactive_boxplot(df, x_col, y_col, color_col=None, xrange=None,
             if f.name in custom_y_dict:
                 f.layout.update(yaxis_range = custom_y_dict[(f.name)])
 
+
+    for f in fig.frames:
+        if f.name in ['AD','MD','RD', 'MD-FWcorrected', 'AD-FWcorrected','RD-FWcorrected']:
+            f.layout.update(yaxis_title=dict(text='Value (x10-3)'))
+        else:
+            f.layout.update(yaxis_title=dict(text='Value'))
+
     return fig
 
