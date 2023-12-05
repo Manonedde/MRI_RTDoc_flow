@@ -238,7 +238,6 @@ def generate_summary_table(df, by_cols=['Measures', 'Value'], round_at=3,
 
     Return table that could be save using .to_csv() or .to_latex() function.
     """
-    print(by_cols[0:-1])
     summary_table = df.groupby(by_cols[0:-1]
                                )[by_cols[1]].describe().reset_index()
     summary_table.insert(8, 'range', summary_table['max'] -
@@ -252,10 +251,10 @@ def generate_summary_table(df, by_cols=['Measures', 'Value'], round_at=3,
         col_name = by_cols[0:-1] + custom_col_name
     
     summary_table.columns = col_name
+    summary_table = summary_table.set_index(by_cols[0:-1])
 
     if select_stats_col:
         summary_table = summary_table[select_stats_col]
-    summary_table = summary_table.set_index(by_cols[0:-1])
 
     return summary_table
 
