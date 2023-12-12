@@ -140,8 +140,9 @@ def main():
         curr_title = "Boxplot of " + bundle + " measurements"
     
         if args.add_average:
-            df = add_average_from_longitudinal(df, args.use_as_slider,
+            df = add_average_from_longitudinal(df, 'Session',
                                                'Average')
+            df.Session = df.Session.astype(str)
 
         if args.custom_y is not None:
             custom_yaxis = args.custom_y
@@ -149,11 +150,11 @@ def main():
             custom_yaxis = False
         else:
             custom_yaxis = boxplot_parameters_dict
-            print(custom_yaxis)
 
         if args.apply_factor:
             for metric in get_row_name_from_col(df, args.use_as_slider):
                 if metric in scaling_metrics:
+                    custom_yaxis[metric][0] *= args.apply_factor
                     custom_yaxis[metric][1] *= args.apply_factor
 
         fig = interactive_boxplot(

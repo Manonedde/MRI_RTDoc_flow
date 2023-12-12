@@ -28,15 +28,15 @@ average_parameters_dict = {
     "Volume": [0,250000], "Count": [0, 65000], "Length": [0, 220]}
 
 boxplot_parameters_dict = {
-    "FA": [0.25, 0.65], "MD": [0.0004, 0.0011], "RD": [0.0004, 0.0011], "AD": [0.0008, 0.0014],
-    "FW": [0, 0.2],
-    "FA-FWcorrected": [0.3, 0.6], "MD-FWcorrected": [0.0004, 0.0011],
-    "RD-FWcorrected": [0.0006, 0.0014], "AD-FWcorrected": [0.0006, 0.0014],
-    "ECVF": [0, 0.6], "ICVF": [0.2, 0.8], "OD": [0.1, 0.5], "ISOVF": [0, 0.2],
-    "AFD_total": [0, 0.6], "NuFO": [1, 3], "AFD": [0, 2], "AFD_sum": [0, 2],
+    "FA": [0.25, 0.65], "MD": [0.0005, 0.001], "RD": [0.0004, 0.0008], "AD": [0.0008, 0.0014],
+    "FW": [0, 0.1],
+    "FA-FWcorrected": [0.3, 0.6], "MD-FWcorrected": [0.0005, 0.001],
+    "RD-FWcorrected": [0.0004, 0.0008], "AD-FWcorrected": [0.0008, 0.0014],
+    "ECVF": [0, 0.6], "ICVF": [0.2, 0.8], "OD": [0.1, 0.4], "ISOVF": [0, 0.2],
+    "AFD_total": [0.1, 0.5], "NuFO": [1.5, 3], "AFD": [0, 2], "AFD_sum": [0, 2],
     "AFD fixel": [0, 1],
     "Radial ODF": [0, 1], "GFA": [0, 0.8], "APower": [0, 10],
-    "MTR": [15, 30], "ihMTR": [4, 12], "MTsat": [2, 5], "ihMTsat": [0, 0.2],
+    "MTR": [18, 28], "ihMTR": [4, 12], "MTsat": [2, 5], "ihMTsat": [0, 0.2],
     "ihMTdR1sat": [0, 0.4],
     "Volume": [0,250000], "Count": [0, 65000], "Length": [0, 220]}
 
@@ -72,7 +72,7 @@ metric_colors = {
     'MD-FWcorrected': '#E6891E', 'RD-FWcorrected': '#FEBE17',
     'adt': '#E9EC38', 'fat': '#FC6666', 'mdt': '#E6891E', 'rdt': '#FEBE17',
     'Volume': '#333333', 'Count': '#770302', 'volume': '#333333',
-    'count': '#770302'}
+    'count': '#770302', 'length': '#cc3300','Length': '#cc3300'}
 
 
 # Bundles color list
