@@ -51,13 +51,11 @@ def _build_arg_parser():
                         ' argument in slected column. ')
     p.add_argument('--filter_missing', action='store_true',
                    help='Use to filter missing metrics when you reorder.')
-    p.add_argument('--factor', type=int,
-                   help='Use to update parameter if you apply a factor on measures.')
 
-    boxplot = p.add_argument_group(title='Scatter plot options')
+    boxplot = p.add_argument_group(title='Boxplot plot options')
     boxplot.add_argument('--plot_size', nargs=2, type=int,
                          metavar=('p_width', 'p_height'),
-                         default=(1100, 800),
+                         default=(950, 700),
                          help='Width and Height of Scatter Plot. ')
     boxplot.add_argument('--custom_order',
                          help='Use dictionary provided to set order of '

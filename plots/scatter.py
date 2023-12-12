@@ -11,7 +11,7 @@ from plots.utils import save_trend_from_plot, add_ols_info, fetch_ols_results
 def interactive_distribution_scatter(
         df, x_column, y_column, color_column, figtitle='', colormap='Set2',
         f_column=None, f_row=None, column_wrap=0, bgcolor="white",
-        column_spacing=0.09, row_spacing=0.09, title_size=20, font_size=15,
+        column_spacing=0.06, row_spacing=0.09, title_size=18, font_size=13,
         show_legend=False, custom_order=None, fig_width=900, fig_height=700,
         line_width=1, x_label='', y_label='', custom_y_range=False,
         print_yaxis_range=False, kwgs={}):
@@ -55,9 +55,9 @@ def interactive_distribution_scatter(
 
     fig.for_each_annotation(lambda anot: anot.update(
         text=anot.text.split("=")[-1]))
-    fig.update_layout(title_x=0.5, showlegend=show_legend,
-                      font={'size': font_size},
-                      title_font=dict(size=title_size), plot_bgcolor=bgcolor,)
+    fig.update_layout(title_x=0.5, showlegend=show_legend, plot_bgcolor=bgcolor,
+                      font={'size': font_size}, margin=dict(l=0, r=20, t=70, b=0),
+                      title_font=dict(size=title_size))
     fig.update_yaxes(matches=None, title=y_label, showticklabels=True,
                      visible=True, showline=True, linewidth=line_width,
                      linecolor='black', gridcolor='lightgrey')

@@ -173,29 +173,27 @@ python $source/rd_distribution_measures.py \
 python $source/rd_boxplot.py \
                 $output_path/csv_data/rtd_average_measures.csv \
                 --out_dir $output_path/averages_figures \
-                --split_by 'Method' --filter_missing
+                --split_by 'Method' --filter_missing --apply_factor 100 \
+                --out_name _measurement_boxplot_with_factor
 
-# Boxplot
-python $source/rd_boxplot.py $output_path/csv_data/rtd__average_measures.csv\
-                 --out_dir $output_path/distributions \
-                 --split_by 'Method' --filter_missing
-
+# Boxplot Volume
 python $source/rd_boxplot.py $output_path/csv_data/rtd__average_volume.csv \
                 --out_dir $output_path/distributions \
                 --split_by 'Method' --filter_missing
 
 ## Profiles plots
-# Profile for each 
+# Profile for each bundles
 python $source/rd_profiles_measures.py \
         $output_path/csv_data/rtd__profile_measures.csv \
         Section Value 'Bundle sections' --out_dir $output_path/profile/ \
-        --filter_missing --split_by Bundles --use_as_slider Session
+        --filter_missing --split_by Bundles --use_as_slider Session \
+        --apply_factor 100 --add_average --out_prefix AF
 
 python $source/rd_profiles_measures.py \
         $output_path/csv_data/rtd__profile_volume.csv \
         Section Value Profile --out_dir $output_path/profile/ \
         --out_name volume_profile --filter_missing --split_by Bundles \
-        --use_as_slider Session
+        --use_as_slider Session --out_prefix AF --add_average
         
 echo -e "Ending process"
 

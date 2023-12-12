@@ -10,7 +10,8 @@ from plotly.subplots import make_subplots
 def interactive_lineplot(df, x_col, y_col, color_col=False, xrange=None,
                          yrange=None, custom_y_dict=None, colormap='Set2',
                          frame=None, group=None, y_label='', x_label='',
-                         title='', template="plotly_white", kwgs={}):
+                         title='', template="plotly_white", fig_height=500,
+                         fig_width=700, kwgs={}):
     """
     Generate an interactive lineplot.
 
@@ -61,7 +62,7 @@ def check_colormap(colormap, n):
 def interactive_ridgeline(multi_df, x_col, y_col, colormap, generate_colors=True,
                           spacing=-0.35, shared_axis=True, tag_name='',
                           template="plotly_white", title='', linewidth=2,
-                          fig_height=600, fig_width=900):
+                          fig_height=500, fig_width=700):
     """
     Generates interactive ridge lineplot based on list of dataframe.
 
@@ -109,7 +110,8 @@ def interactive_ridgeline(multi_df, x_col, y_col, colormap, generate_colors=True
                                 name=f'{tag_name} {idx+1}'),
                       row=idx+1, col=1)
 
-    fig.update_layout(template=template, title_text=title
+    fig.update_layout(template=template, title_text=title,
+                      margin=dict(l=0, r=20, t=70, b=0),
                       width=fig_width, height=fig_height)
 
     fig.for_each_xaxis(lambda x: x.update(visible=False,

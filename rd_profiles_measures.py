@@ -10,7 +10,7 @@ import argparse
 import os
 import pandas as pd
 
-from dataframe.func import split_df_by
+from dataframe.func import split_df_by, add_average_from_longitudinal
 from dataframe.utils import load_df
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from plots.parameters import dict_plot_profile, metric_colors
@@ -28,6 +28,8 @@ def _build_arg_parser():
                    help='List of column name corresponding to x, y.')
 
     p.add_argument('--out_name', default='_profile',
+                   help='Output filename to save plot.')
+    p.add_argument('--out_prefix', default='',
                    help='Output filename to save plot.')
     p.add_argument('--out_dir',
                    help='Output directory for the labeled mask.')
@@ -59,7 +61,7 @@ def _build_arg_parser():
     profile = p.add_argument_group(title='Scatter plot options')
     profile.add_argument('--plot_size', nargs=2, type=int,
                          metavar=('p_width', 'p_height'),
-                         default=(900, 600),
+                         default=(600, 400),
                          help='Width and Height of Scatter Plot. ')
     profile.add_argument('--custom_y',
                          help='Use dictionary provided to set x and y axis '
@@ -125,7 +127,7 @@ def main():
     if args.split_by:
         multi_df, df_names = split_df_by(df, args.split_by)
         for frame, curr_name in zip(multi_df, df_names):
-            curr_title = "Profil of " + curr_name
+            curr_title = args.out_prefix + " Profile for " + curr_name
             frame = frame.groupby([args.plot_args[0], args.use_as_slider,
                                    'Measures']
                                    )[args.plot_args[1]].mean().reset_index()
@@ -139,13 +141,13 @@ def main():
                         colormap=metrics_colors, title=curr_title)
 
             # Save figure
-            save_figures_as(fig, args.out_dir, 
-                            curr_name + '_' + args.out_name + '.html',
+            save_figures_as(fig, args.out_dir, args.out_prefix  + '_' +
+                            curr_name + '_' + args.out_name,
                             is_slider=args.use_as_slider,
                             save_as_png=args.save_as_png, play=args.autoplay)
     else:
         single_method = df['Method'].unique().tolist()[0]
-        curr_title = "Profil of " + single_method
+        curr_title = args.out_prefix + " Profile for " + curr_name
 
         if args.longitudinal:
             df = df.groupby([args.plot_args[0], args.use_as_slider,
@@ -161,8 +163,8 @@ def main():
                     colormap=metrics_colors, title=curr_title)
 
         # Save figure
-        save_figures_as(fig, args.out_dir,
-                        args.out_name + '.html',
+        save_figures_as(fig, args.out_dir, 
+                        args.out_prefix  + '_' + args.out_name,
                         is_slider=args.use_as_slider,
                         save_as_png=args.save_as_png, play=args.autoplay)
 

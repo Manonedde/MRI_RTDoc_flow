@@ -55,7 +55,7 @@ def _build_arg_parser():
     scatter = p.add_argument_group(title='Scatter plot options')
     scatter.add_argument('--plot_size', nargs=2, type=int,
                          metavar=('p_width', 'p_height'),
-                         default=(1100, 800),
+                         default=(950, 700),
                          help='Width and Height of Scatter Plot. ')
     scatter.add_argument('--custom_order',
                          help='Use dictionary provided to set order of '
