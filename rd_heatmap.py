@@ -134,7 +134,7 @@ def main():
         new_order = False
 
     if args.add_average:
-        df = add_average_from_longitudinal(df, 'Session', 'Average')
+        df = add_average_from_longitudinal(df, args.use_as_slider, 'Average')
 
     # Generate merged column for pivot
     df['Measures_Bundles'] = df['Measures'] + '_' + df['Bundles']

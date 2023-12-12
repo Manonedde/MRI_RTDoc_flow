@@ -54,31 +54,31 @@ def _build_arg_parser():
     p.add_argument('--factor', type=int,
                    help='Use to update parameter if you apply a factor on measures.')
 
-    scatter = p.add_argument_group(title='Scatter plot options')
-    scatter.add_argument('--plot_size', nargs=2, type=int,
+    boxplot = p.add_argument_group(title='Scatter plot options')
+    boxplot.add_argument('--plot_size', nargs=2, type=int,
                          metavar=('p_width', 'p_height'),
                          default=(1100, 800),
                          help='Width and Height of Scatter Plot. ')
-    scatter.add_argument('--custom_order',
+    boxplot.add_argument('--custom_order',
                          help='Use dictionary provided to set order of '
                          'metrics plot.')
-    scatter.add_argument('--custom_y',
+    boxplot.add_argument('--custom_y',
                          help='Use dictionary provided to set x and y axis '
                          'range by measures.')
-    scatter.add_argument('--use_data', action='store_true',
+    boxplot.add_argument('--use_data', action='store_true',
                          help='Use data to set x and y axis range.')
-    scatter.add_argument('--custom_colors',
+    boxplot.add_argument('--custom_colors',
                          help='Dictionary containing the bundle names and '
                          'colors associated in HEX format.')
-    scatter.add_argument('--apply_factor', type=int,
+    boxplot.add_argument('--apply_factor', type=int,
                          help='Factor applied on MRI measure for plot. '
                               ' [%(default)s].')
-    scatter.add_argument('--print_yaxis_range', action='store_true',
+    boxplot.add_argument('--print_yaxis_range', action='store_true',
                          help='Use to check/update the y axis range. ')
 
-    scatter.add_argument('--save_as_png', action='store_true',
+    boxplot.add_argument('--save_as_png', action='store_true',
                          help='Save plot as png. Require kaleido.')
-    scatter.add_argument('--dpi_scale', type=int, default=6,
+    boxplot.add_argument('--dpi_scale', type=int, default=6,
                          help='Use to increase (>1) or decrease (<1) the '
                               ' image resolution. [%(default)s]')
     add_overwrite_arg(p)
@@ -136,10 +136,10 @@ def main():
                 custom_order = order_plot_dict[curr_method]
                 custom_yaxis = average_parameters_dict
 
-            if args.factor:
+            if args.apply_factor:
                 for metric in custom_order:
                     if metric in scaling_metrics:
-                        custom_yaxis[metric][1] *= int(args.factor)
+                        custom_yaxis[metric][1] *= args.apply_factor
 
             col_wrap = 0
             if len(frame['Measures'].unique()) > 2:
@@ -176,10 +176,10 @@ def main():
             custom_order = order_plot_dict[single_method]
             custom_yaxis = average_parameters_dict
 
-        if args.factor:
+        if args.apply_factor:
             for metric in custom_order:
                 if metric in scaling_metrics:
-                    custom_yaxis[metric][1] *= int(args.factor)
+                    custom_yaxis[metric][1] *= args.apply_factor
 
         col_wrap = 0
         if len(df['Measures'].unique()) > 2:

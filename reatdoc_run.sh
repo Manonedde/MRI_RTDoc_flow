@@ -159,14 +159,16 @@ python $source/rd_heatmap.py \
 # Correlation with menu for each bundles
 python $source/rd_correlation_with_menu.py \
                 $output_path/csv_data/rtd_average_measures.csv \
-                --out_dir $output_path/averages_figures --longitudinal
+                --out_dir $output_path/correlations --longitudinal \
+                --split_by Bundles
 
 ## Distribution all bundles
 # Scatter plots
 python $source/rd_distribution_measures.py \
                 $output_path/csv_data/rtd_average_measures.csv \
                 --out_dir $output_path/averages_figures \
-                --split_by 'Method' --filter_missing
+                --split_by 'Method' --filter_missing --apply_factor 100 \
+                --out_name _measurement_distribution_with_factor
 
 python $source/rd_boxplot.py \
                 $output_path/csv_data/rtd_average_measures.csv \

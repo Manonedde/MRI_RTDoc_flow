@@ -52,27 +52,32 @@ def _build_arg_parser():
     frames.add_argument('--longitudinal', action='store_true',
                         help='In case of longitudinal data, some plots option '
                              'require to group by using mean().')
+    frames.add_argument('--add_average', action='store_true',
+                        help='In case of longitudinal data, this will add the '
+                             'average value from all data using mean().')
 
-    scatter = p.add_argument_group(title='Scatter plot options')
-    scatter.add_argument('--plot_size', nargs=2, type=int,
+    profile = p.add_argument_group(title='Scatter plot options')
+    profile.add_argument('--plot_size', nargs=2, type=int,
                          metavar=('p_width', 'p_height'),
                          default=(900, 600),
                          help='Width and Height of Scatter Plot. ')
-    scatter.add_argument('--custom_y',
+    profile.add_argument('--custom_y',
                          help='Use dictionary provided to set x and y axis '
                          'range by measures.')
-    scatter.add_argument('--use_data', action='store_true',
+    profile.add_argument('--use_data', action='store_true',
                          help='Use data to set x and y axis range.')
-    scatter.add_argument('--custom_colors',
+    profile.add_argument('--custom_colors',
                          help='Dictionary containing the bundle names and '
                          'colors associated in HEX format.')
-    scatter.add_argument('--apply_factor', type=int,
+    profile.add_argument('--apply_factor', type=int,
                          help='Factor applied on MRI measure for plot. '
                               ' [%(default)s].')
 
-    scatter.add_argument('--save_as_png', action='store_true',
+    profile.add_argument('--save_as_png', action='store_true',
                          help='Save plot as png. Require kaleido.')
-    scatter.add_argument('--dpi_scale', type=int, default=6,
+    profile.add_argument('--autoplay', action='store_true',
+                         help='Save html with the slider in auto play.')
+    profile.add_argument('--dpi_scale', type=int, default=6,
                          help='Use to increase (>1) or decrease (<1) the '
                               ' image resolution. [%(default)s]')
     add_overwrite_arg(p)
@@ -114,7 +119,9 @@ def main():
     df = check_agreement_with_dict(df, 'Measures', metrics_colors,
                                    ignore_lenght=True, 
                                    rm_missing=args.filter_missing)
-    
+    if args.add_average:
+        df = add_average_from_longitudinal(df, args.use_as_slider, 'Average')
+
     if args.split_by:
         multi_df, df_names = split_df_by(df, args.split_by)
         for frame, curr_name in zip(multi_df, df_names):
@@ -135,7 +142,7 @@ def main():
             save_figures_as(fig, args.out_dir, 
                             curr_name + '_' + args.out_name + '.html',
                             is_slider=args.use_as_slider,
-                            save_as_png=args.save_as_png)
+                            save_as_png=args.save_as_png, play=args.autoplay)
     else:
         single_method = df['Method'].unique().tolist()[0]
         curr_title = "Profil of " + single_method
@@ -154,10 +161,10 @@ def main():
                     colormap=metrics_colors, title=curr_title)
 
         # Save figure
-        save_figures_as(fig, args.out_dir, 
+        save_figures_as(fig, args.out_dir,
                         args.out_name + '.html',
                         is_slider=args.use_as_slider,
-                        save_as_png=args.save_as_png)
+                        save_as_png=args.save_as_png, play=args.autoplay)
 
 
 

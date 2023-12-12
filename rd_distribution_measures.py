@@ -195,7 +195,7 @@ def main():
         save_figures_as(fig, args.out_dir, outname,
                     save_as_png=args.save_as_png, dpi_scale=args.dpi_scale,
                     heigth_value=args.plot_size[1],
-                    width_value=args.plot_size[0])
+                    width_value=args.plot_size[0], play=args.autoplay)
 
 
 if __name__ == '__main__':
