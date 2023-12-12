@@ -83,8 +83,10 @@ def interactive_distribution_box(
 
 def interactive_boxplot(df, x_col, y_col, color_col=None, xrange=None,
                          yrange=None, custom_y_dict=None, colormap='Set2',
-                         frame=None, group=None, y_label='', x_label='',
-                         title='', template="plotly_white", kwgs={}):
+                         frame=None, group=None, y_label='Value', x_label='',
+                         title='', template="plotly_white", fig_height=500,
+                         fig_width=700, custom_scale_list=None,
+                         custom_scale_name=None, kwgs={}):
     """
     Generate an interactive boxplot.
 
@@ -98,6 +100,8 @@ def interactive_boxplot(df, x_col, y_col, color_col=None, xrange=None,
     title :             Set the title of the figure
     fig_width :         Set the width of large figure
     fig_height :        Set the height of large figure
+    custom_scale_list:  List of metrics/y_label to set custom Y label.
+    custom_scale_name:  Y-label for list in custom_scale_list.
 
     Return figure structure that could be save using write_html function.
     """
@@ -109,17 +113,21 @@ def interactive_boxplot(df, x_col, y_col, color_col=None, xrange=None,
     fig.update_yaxes(title_text=y_label, visible=True)
     fig.update_xaxes(title_text=x_label, visible=True)
 
+    fig.upd
+
+    # Loop to update y_range for each frame
     if custom_y_dict:
         for f in fig.frames:
             if f.name in custom_y_dict:
                 f.layout.update(yaxis_range = custom_y_dict[(f.name)])
 
-
-    for f in fig.frames:
-        if f.name in ['AD','MD','RD', 'MD-FWcorrected', 'AD-FWcorrected','RD-FWcorrected']:
-            f.layout.update(yaxis_title=dict(text='Value (x10-3)'))
-        else:
-            f.layout.update(yaxis_title=dict(text='Value'))
+    # replace y-axis label by custom ylabel : use to add (10-3) for example
+    if custom_scale_list and custom_scale_name:
+        for f in fig.frames:
+            if f.name in custom_scale_list: 
+                f.layout.update(yaxis_title=dict(text=custom_scale_name))
+            else:
+                f.layout.update(yaxis_title=dict(text=y_label))
 
     return fig
 

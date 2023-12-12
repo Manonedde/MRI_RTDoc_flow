@@ -17,10 +17,11 @@ import argparse
 
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from dataframe.parameters import scaling_metrics
-from dataframe.func import split_df_by
+from dataframe.func import split_df_by, add_average_from_longitudinal
 from dataframe.utils import load_df
 from plots.parameters import (average_parameters_dict, order_plot_dict,
-                              bundle_dict_color_v1, bundle_dict_color_v10)
+                              bundle_dict_color_v1, bundle_dict_color_v10,
+                              metric_colors)
 from plots.utils import (check_df_for_columns, check_agreement_with_dict,
                          save_figures_as)
 from plots.boxplot import interactive_distribution_box
@@ -49,8 +50,14 @@ def _build_arg_parser():
     p.add_argument('--split_by',
                    help='Column name. Use to plot distribution on each unique'
                         ' argument in slected column. ')
+    p.add_argument('--use_as_slider',
+                   help='Column name. Generates a heatmap for each unique'
+                        ' argument corresponding to the column.')
     p.add_argument('--filter_missing', action='store_true',
                    help='Use to filter missing metrics when you reorder.')
+    p.add_argument('--add_average', action='store_true',
+                   help='In case of longitudinal data, this will add the '
+                        'average value from all data using mean().')
 
     boxplot = p.add_argument_group(title='Boxplot plot options')
     boxplot.add_argument('--plot_size', nargs=2, type=int,
@@ -115,9 +122,53 @@ def main():
     df = check_agreement_with_dict(df, 'Bundles', bundle_colors,
                                    ignore_lenght=True,
                                    rm_missing=args.filter_missing)
+    df = check_agreement_with_dict(df, 'Measures', metric_colors,
+                                   ignore_lenght=True, 
+                                   rm_missing=args.filter_missing)
     df = check_agreement_with_dict(df, 'Method', order_plot_dict,
                                    rm_missing=args.filter_missing,
                                    ignore_lenght=True)
+
+    if args.use_as_slider:
+        if args.custom_colors is not None:
+            metrics_colors = args.custom_colors
+        else:
+            metrics_colors = metric_colors
+
+        bundle = df['Bundles'].unique().tolist()[0]
+        curr_title = "Boxplot of " + bundle + " measurements"
+    
+        if args.add_average:
+            df = add_average_from_longitudinal(df, args.use_as_slider,
+                                               'Average')
+
+        if args.custom_y is not None:
+            custom_yaxis = args.custom_y
+        elif args.use_data:
+            custom_yaxis = False
+        else:
+            custom_yaxis = average_parameters_dict
+
+        if args.apply_factor:
+            for metric in get_row_name_from_col(df, args.use_as_slider):
+                if metric in scaling_metrics:
+                    custom_yaxis[metric][1] *= args.apply_factor
+
+        fig = interactive_boxplot(
+                    df, 'Session', 'Value', color_col='Measures',
+                    custom_y_dict=custom_yaxis, colormap=metric_colors,
+                    frame='Measures', group='Measures', title=curr_title,
+                    template="plotly_white", fig_width=args.plot_size[0],
+                    fig_height=args.plot_size[1],
+                    custom_scale_list=scaling_metrics,
+                    custom_scale_name='Value (x10-3)')
+
+        outname = bundle + args.out_name
+
+        save_figures_as(fig, args.out_dir, outname,
+                    save_as_png=args.save_as_png, dpi_scale=args.dpi_scale,
+                    heigth_value=args.plot_size[1],
+                    width_value=args.plot_size[0], play=args.autoplay)
 
     if args.split_by:
         multi_df, df_names = split_df_by(df, args.split_by)
