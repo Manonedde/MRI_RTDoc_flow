@@ -39,6 +39,9 @@ def _build_arg_parser():
                    help='Output directory for the labeled mask.')
     p.add_argument('--save_as_png', action='store_true',
                    help='Save plot as png. Require kaleido.')
+    p.add_argument('--autoplay', action='store_true',
+                   help='Save html with the slider in auto play.')
+
 
     frames = p.add_argument_group(title='Dataframe options')
     frames.add_argument('--split_by',
@@ -130,11 +133,11 @@ def main():
     else:
         new_order = False
 
-    # Generate merged column for pivot
-    df['Measures_Bundles'] = df['Measures'] + '_' + df['Bundles']
-
     if args.add_average:
         df = add_average_from_longitudinal(df, 'Session', 'Average')
+
+    # Generate merged column for pivot
+    df['Measures_Bundles'] = df['Measures'] + '_' + df['Bundles']
 
     # Generate Heatmap
     if args.split_by:
@@ -165,6 +168,7 @@ def main():
 
     # Heatmap with slider
     if args.use_as_slider:
+        corr_map_names = get_row_name_from_col(df, args.use_as_slider)
         corr_map, colorbar_title = get_multi_corr_map(
             df, args.use_as_slider, 'Sid',
             'Measures_Bundles', 'Value',
@@ -174,10 +178,10 @@ def main():
 
         # Generate figure
         fig = interactive_heatmap_with_slider(
-            corr_map, title=args.title, colbar_title=colorbar_title,
-            colormap=px.colors.sequential.YlGnBu, tick_angle=90,
-            y_label=args.ylabel, tick_font_size=12, title_size=25,
-            r_min=args.r_range[0], r_max=args.r_range[1],
+            corr_map, corr_map_names, title=args.title,
+            colbar_title=colorbar_title, colormap=px.colors.sequential.YlGnBu,
+            tick_angle=90, y_label=args.ylabel, tick_font_size=12,
+            title_size=25, r_min=args.r_range[0], r_max=args.r_range[1],
             fig_width=args.plot_size[0],
             fig_height=args.plot_size[1])
 
@@ -203,7 +207,7 @@ def main():
     else:
         save_figures_as(fig, args.out_dir, args.out_name,
                         is_slider=args.use_as_slider,
-                        save_as_png=args.save_as_png)
+                        save_as_png=args.save_as_png, play=args.autoplay)
 
 
 if __name__ == '__main__':

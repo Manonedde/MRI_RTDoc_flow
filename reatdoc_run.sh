@@ -146,9 +146,15 @@ mkdir -p $output_path/averages $output_path/profile \
 # Heatmap with session as slider
 python $source/rd_heatmap.py \
                 $output_path/csv_data/rtd_average_measures.csv \
-                --out_dir $output_path/heatmap \
+                --out_dir $output_path/heatmap --longitudinal \
+                --use_as_slider 'Session' --reorder_measure --filter_missing
+
+python $source/rd_heatmap.py \
+                $output_path/csv_data/rtd_average_measures.csv \
+                --out_dir $output_path/heatmap --add_average --longitudinal \
                 --use_as_slider 'Session' --reorder_measure --filter_missing \
-                --longitudinal
+                --apply_on_pearson absolute --plot_size 1000 900\
+                --out_name correlation_heatmap_add_average
 
 # Correlation with menu for each bundles
 python $source/rd_correlation_with_menu.py \

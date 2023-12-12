@@ -50,7 +50,7 @@ def interactive_heatmap(corr_map, title='', colbar_title='',
 
 
 def interactive_heatmap_with_slider(
-            corr_dfs, title='', colbar_title='',
+            corr_dfs, corr_dfs_names, title='', colbar_title='',
             colormap=px.colors.sequential.YlGnBu,
             slider_label='Session ', y_label='Metrics by Bundles',
             r_min=0.3, r_max=1, tick_angle=45, tick_font_size=12,
@@ -63,6 +63,7 @@ def interactive_heatmap_with_slider(
     matrix of all subjects, bundles and metrics for each session.
 
     corr_dfs :          List of correlation matrix [index,column] x n_time
+    corr_dfs_names :    List of name corresponding to the corr_dfs (same number)
     title :             Label corresponding to the heatmap title
     colormap :          Color scale used to plot heatmap
     colbar_title :      Title of colorbar
@@ -82,8 +83,8 @@ def interactive_heatmap_with_slider(
         go.Frame(data=go.Heatmap(z=df.values, x=df.columns, y=df.index,
                                  colorscale=colormap, zmin=r_min, zmax=r_max,
                                  colorbar=dict(title=colbar_title)),
-                 name=slider_label + str(i+1))
-        for i, df in enumerate(corr_dfs)]
+                 name=slider_label + str(df_name))
+        for df, df_name in zip(corr_dfs, corr_dfs_names)]
 
     fig=go.Figure(data=frames[0].data, frames=frames).update_layout(
         # iterate over frames to generate steps

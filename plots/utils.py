@@ -30,10 +30,10 @@ def generate_reorder_list(df, ordered_argument_list, with_column):
 
 def save_figures_as(fig, out_path, out_name, is_slider=False,
                     save_as_png=False, dpi_scale=6, heigth_value=1000,
-                    width_value=1000):
+                    width_value=1000, play=False):
     """
     Function to save figures as HTML or PNG files. 
-    By default, figure is saved  in HTML.
+    By default, figure is saved  in HTML without auto play.
 
     fig:            Figure structure.
     out_path:       Output path to save figure.
@@ -43,6 +43,7 @@ def save_figures_as(fig, out_path, out_name, is_slider=False,
     dpi_scale:      PNG file resolution.
     heigth_value:   Heigth to save PNG file
     width_value:    Width to save PNG file.
+    play:           Option to play automatically or not the slider.
 
     Return  HTML or PNG file 
     """
@@ -52,7 +53,8 @@ def save_figures_as(fig, out_path, out_name, is_slider=False,
         fig.write_image(os.path.join(out_path, out_name + '.png'),
                         scale=dpi_scale, heigth=heigth_value, width=width_value)
     else:
-        fig.write_html(os.path.join(out_path, out_name + '.html'))
+        fig.write_html(os.path.join(out_path, out_name + '.html'),
+                       auto_play=play)
 
 
 def check_df_for_columns(df, split_filter=None, profile=None):

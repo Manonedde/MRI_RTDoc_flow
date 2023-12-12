@@ -386,6 +386,7 @@ def add_average_from_longitudinal(df, column, label):
     # Add column name
     df_mean[column] = label
     # Merge dataframes and reorder columns
-    df_merge = pd.concat([df, df_mean])
+    df_merge = pd.concat([df, df_mean]).reset_index()
     df_merge = df_merge[df.columns.tolist()]
+    
     return df_merge
