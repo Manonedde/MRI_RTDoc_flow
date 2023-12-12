@@ -155,6 +155,13 @@ python $source/rd_heatmap.py \
                 --use_as_slider 'Session' --reorder_measure --filter_missing \
                 --apply_on_pearson absolute --plot_size 1000 900\
                 --out_name correlation_heatmap_add_average
+# plot by bundles
+python $source/rd_heatmap.py \
+                $output_path/bundles/AF_average_measures.csv \
+                --out_dir $output_path/heatmap --add_average --longitudinal \
+                --use_as_slider 'Session' --reorder_measure --filter_missing \
+                --apply_on_pearson absolute --plot_size 950 900\
+                --out_name correlation_heatmap_add_average
 
 # Correlation with menu for each bundles
 python $source/rd_correlation_with_menu.py \
