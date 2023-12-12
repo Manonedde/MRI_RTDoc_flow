@@ -362,3 +362,30 @@ def pivot_to_wide(df, pivot_index, pivot_columns, pivot_value,
         df = df.pivot(index=pivot_index, columns=pivot_columns,
                       values=pivot_value).reset_index()
     return df
+
+
+def add_average_from_longitudinal(df, column, label):
+    """ 
+    Function to add the average values of a dataframe from a longitudinal 
+    dataframe (i.e. average all values over time).
+
+    df :        Dataframe
+    column :    Column name. Column on which average values are calculated.
+    label:      Name of the label to be associated with the average value, 
+                generally 'Average' is used.
+    
+    Return     Dataframe with average values added.
+
+    """
+    # Extract column names
+    col_list = df.columns.tolist()
+    # Remove column of interest from list
+    col_list.remove(column)
+    # Compute mean from dataframe based on column list and Value
+    df_mean = df.groupby(col_list[0:-1])['Value'].mean().reset_index()
+    # Add column name
+    df_mean[column] = label
+    # Merge dataframes and reorder columns
+    df_merge = pd.concat([df, df_mean])
+    df_merge = df_merge[df.columns.tolist()]
+    return df_merge

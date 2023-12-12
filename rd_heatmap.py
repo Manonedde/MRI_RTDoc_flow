@@ -16,7 +16,8 @@ import argparse
 
 import plotly.express as px
 
-from dataframe.func import get_multi_corr_map, get_corr_map
+from dataframe.func import (get_multi_corr_map, get_corr_map,
+                            add_average_from_longitudinal)
 from dataframe.utils import get_row_name_from_col, load_df
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from plots.parameters import new_order_measure
@@ -68,6 +69,9 @@ def _build_arg_parser():
     frames.add_argument('--longitudinal', action='store_true',
                         help='In case of longitudinal data, some plots option '
                              'require to group by using mean().')
+    frames.add_argument('--add_average', action='store_true',
+                        help='In case of longitudinal data, this will add the '
+                             'average value from all data using mean().')
 
     plot_opts = p.add_argument_group(title='Heatmap display options')
     plot_opts.add_argument('--r_range', nargs=2, type=float,
@@ -128,6 +132,9 @@ def main():
 
     # Generate merged column for pivot
     df['Measures_Bundles'] = df['Measures'] + '_' + df['Bundles']
+
+    if args.add_average:
+        df = add_average_from_longitudinal(df, 'Session', 'Average')
 
     # Generate Heatmap
     if args.split_by:
