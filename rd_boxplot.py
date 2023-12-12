@@ -18,13 +18,13 @@ import argparse
 from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from dataframe.parameters import scaling_metrics
 from dataframe.func import split_df_by, add_average_from_longitudinal
-from dataframe.utils import load_df
+from dataframe.utils import load_df, get_row_name_from_col
 from plots.parameters import (average_parameters_dict, order_plot_dict,
                               bundle_dict_color_v1, bundle_dict_color_v10,
-                              metric_colors)
+                              metric_colors, boxplot_parameters_dict)
 from plots.utils import (check_df_for_columns, check_agreement_with_dict,
                          save_figures_as)
-from plots.boxplot import interactive_distribution_box
+from plots.boxplot import interactive_distribution_box, interactive_boxplot
 
 
 def _build_arg_parser():
@@ -81,11 +81,13 @@ def _build_arg_parser():
     boxplot.add_argument('--print_yaxis_range', action='store_true',
                          help='Use to check/update the y axis range. ')
 
-    boxplot.add_argument('--save_as_png', action='store_true',
-                         help='Save plot as png. Require kaleido.')
-    boxplot.add_argument('--dpi_scale', type=int, default=6,
-                         help='Use to increase (>1) or decrease (<1) the '
-                              ' image resolution. [%(default)s]')
+    p.add_argument('--autoplay', action='store_true',
+                   help='Save html with the slider in auto play.')
+    p.add_argument('--save_as_png', action='store_true',
+                   help='Save plot as png. Require kaleido.')
+    p.add_argument('--dpi_scale', type=int, default=6,
+                   help='Use to increase (>1) or decrease (<1) the '
+                        ' image resolution. [%(default)s]')
     add_overwrite_arg(p)
 
     return p
@@ -118,16 +120,15 @@ def main():
         bundle_colors = bundle_dict_color_v1
 
     # check Dataframe shape before plot
-    check_df_for_columns(df, split_filter=args.split_by)
+    df = check_agreement_with_dict(df, 'Method', order_plot_dict,
+                        rm_missing=args.filter_missing,
+                        ignore_lenght=True)
     df = check_agreement_with_dict(df, 'Bundles', bundle_colors,
                                    ignore_lenght=True,
                                    rm_missing=args.filter_missing)
     df = check_agreement_with_dict(df, 'Measures', metric_colors,
                                    ignore_lenght=True, 
                                    rm_missing=args.filter_missing)
-    df = check_agreement_with_dict(df, 'Method', order_plot_dict,
-                                   rm_missing=args.filter_missing,
-                                   ignore_lenght=True)
 
     if args.use_as_slider:
         if args.custom_colors is not None:
@@ -147,7 +148,8 @@ def main():
         elif args.use_data:
             custom_yaxis = False
         else:
-            custom_yaxis = average_parameters_dict
+            custom_yaxis = boxplot_parameters_dict
+            print(custom_yaxis)
 
         if args.apply_factor:
             for metric in get_row_name_from_col(df, args.use_as_slider):
@@ -170,7 +172,8 @@ def main():
                     heigth_value=args.plot_size[1],
                     width_value=args.plot_size[0], play=args.autoplay)
 
-    if args.split_by:
+    elif args.split_by:
+        check_df_for_columns(df, split_filter=args.split_by)
         multi_df, df_names = split_df_by(df, args.split_by)
         for frame, curr_method in zip(multi_df, df_names):
             curr_title = "Boxplot of " + curr_method + " measurements"

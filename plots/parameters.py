@@ -27,6 +27,19 @@ average_parameters_dict = {
     "ihMTdR1sat": [0, 0.4],
     "Volume": [0,250000], "Count": [0, 65000], "Length": [0, 220]}
 
+boxplot_parameters_dict = {
+    "FA": [0.25, 0.65], "MD": [0.0004, 0.0011], "RD": [0.0004, 0.0011], "AD": [0.0008, 0.0014],
+    "FW": [0, 0.2],
+    "FA-FWcorrected": [0.3, 0.6], "MD-FWcorrected": [0.0004, 0.0011],
+    "RD-FWcorrected": [0.0006, 0.0014], "AD-FWcorrected": [0.0006, 0.0014],
+    "ECVF": [0, 0.6], "ICVF": [0.2, 0.8], "OD": [0.1, 0.5], "ISOVF": [0, 0.2],
+    "AFD_total": [0, 0.6], "NuFO": [1, 3], "AFD": [0, 2], "AFD_sum": [0, 2],
+    "AFD fixel": [0, 1],
+    "Radial ODF": [0, 1], "GFA": [0, 0.8], "APower": [0, 10],
+    "MTR": [15, 30], "ihMTR": [4, 12], "MTsat": [2, 5], "ihMTsat": [0, 0.2],
+    "ihMTdR1sat": [0, 0.4],
+    "Volume": [0,250000], "Count": [0, 65000], "Length": [0, 220]}
+
 ######### Profile setting #####
 order_plot_profile = ['DTI', 'DTI-FW', 'FW', 'FODF', 'HARDI', 'MTI', 'NODDI']
 dict_plot_profile = {"DTI": [0, 0.8], "DTI-FW": [0, 0.8], "FW": [0, 0.7],

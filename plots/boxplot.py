@@ -113,8 +113,6 @@ def interactive_boxplot(df, x_col, y_col, color_col=None, xrange=None,
     fig.update_yaxes(title_text=y_label, visible=True)
     fig.update_xaxes(title_text=x_label, visible=True)
 
-    fig.upd
-
     # Loop to update y_range for each frame
     if custom_y_dict:
         for f in fig.frames:
