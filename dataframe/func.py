@@ -4,22 +4,32 @@
 import pandas as pd
 import numpy as np
 
-# Convert json
+# original function
+#def split_col(x):
+##    cols, value = x
+#    parse_val = *cols.split("."), value
+#    return parse_val
 
+def split_col(x, delimiter_arg='.'):
+    """
+    Convert Text to Columns using specific delimiter.
 
-def split_col(x):
+    x:              string or value containing text (cols, value).
+    delimiter_arg:  Delimiter
+
+    Return:         Returns a list of elements divided according to the 
+                    delimiter.
+    """
     cols, value = x
-    parse_val = *cols.split("."), value
+    if not delimiter_arg in cols:
+        raise ValueError('No matching delimiter found.')
+    parse_val = *cols.split(delimiter_arg), value
     return parse_val
 
 
-def get_row_name_from_col(df, col_name):
-    return df[col_name].unique().tolist()
-
 # Reshpae long type CSV to wide format
-
-
 def reshape_to_wide_format(long_format_df, selected_cols):
+    """ Function to reshape long format dataframe to wide format. """
     col_name = copy.deepcopy(selected_cols)
     wide_format = long_format_df.pivot(index=selected_cols,
                                        columns="stats")

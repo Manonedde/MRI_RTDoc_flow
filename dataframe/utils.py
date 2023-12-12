@@ -25,6 +25,7 @@ def split_col(x, delimiter_arg='.'):
 
 
 def get_row_name_from_col(df, col_name):
+    """Return a list of unique row name from a column."""
     return df[col_name].unique().tolist()
 
 
