@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+"""
+Functions for generating interactive scatter plots with plotly.
+Several types of heatmap are available:
+    - Distribution plots with points
+    - Correlation plots with or without trendline
+    - Correlation plots with trendline and dropdown menu
+"""
+
 import itertools
 
 import plotly.express as px

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Set of functions used to prepare or get information from data for plotly figures.
+"""
+
 from scipy.stats import linregress
 
 def get_regression_line_stats(x, y, all_result=False, hypothesis='two-sided'):

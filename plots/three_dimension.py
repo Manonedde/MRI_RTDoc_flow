@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Script to plot 3-dimensional graphes with and without interactive format.
+Functions for generating 3-D figures with plotly.
+Depending on the function, figure can be interactive or not.
 """
+
 import itertools
 import numpy as np
 import math

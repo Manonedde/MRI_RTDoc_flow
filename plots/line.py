@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Functions for generating interactive lineplots with plotly.
+Several types of heatmap are available:
+    - lineplot for profile bundle or timeseries
+    - ridge plot for data frequency
+"""
 
 import numpy as np
 import plotly.express as px

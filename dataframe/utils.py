@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Set of functions used to manipulate dataframe.
+"""
+
 import pandas as pd
 
 def load_df(dataframe_path):

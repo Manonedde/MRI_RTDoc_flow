@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Functions to generate interactive boxplots with plotly.
+"""
+
 import itertools
 
 import plotly.express as px

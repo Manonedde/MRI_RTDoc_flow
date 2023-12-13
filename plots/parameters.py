@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Set of parameters used to generate plotly figures.
+"""
+
 ######### Distribution plots setting #####
 order_plot_dict = {
                     'DTI': ['FA', 'RD', 'MD', 'AD'],

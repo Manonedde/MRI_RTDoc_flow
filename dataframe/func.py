@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Set of functions used to prepare or get information from dataframe.
+"""
+
 import pandas as pd
 import numpy as np
 

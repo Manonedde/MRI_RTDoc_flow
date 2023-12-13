@@ -2,15 +2,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Functions for generating figure with Seaborn, no interactive plots.
+Several types of figure are available.
+"""
+
 import numpy as np
-import pandas as pd
 
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from df_func import compute_ecvf_from_df
 
 def boxplot_with_mean_line(df, x_col, y_col, color_col, use_order=False,
                            colormap="Set2", box_line_width=2,mean_line_width=3,

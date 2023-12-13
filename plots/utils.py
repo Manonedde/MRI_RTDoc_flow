@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Set of functions used to prepare data for plotly figures.
+"""
+
 import os
 import plotly.express as px
 

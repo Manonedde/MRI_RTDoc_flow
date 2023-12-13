@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
-import pandas as pd
+"""
+Functions for generating interactive heatmaps with plotly.
+Several types of heatmap are available:
+    - with or without slider
+    - with one or two groups
+For the moment, more than 2 groups is not supported.
+"""
 
 import plotly.express as px
 import plotly.graph_objects as go

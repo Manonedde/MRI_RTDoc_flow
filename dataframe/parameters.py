@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Convert json utils
+"""
+Set of parameters used to reshape and generate dataframe.
+"""
 
+# Convert json utils
 column_dict_name = {
         "lesion_load_per_point": [["sid", "roi", "metrics", "section",
                                    "lesion_label", "value"],

@@ -10,6 +10,7 @@ By default, script generate figure in html, add --save_as_png to save figure
 in PNG format.
 
 Warning : Require kaleido to save in png.
+          pip install kaleido
 """
 
 import argparse

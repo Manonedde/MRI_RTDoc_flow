@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Set of functions used to do operation on dataframe.
+"""
+
 from collections import OrderedDict
 
 import pandas as pd
