@@ -32,7 +32,6 @@ column_dict_name = {
         "lesion_load_nolist": [["sid", "roi", "metrics", "value"],
                                ['sid', 'roi', "metrics"]]}
 
-
 # Metrics renaming
 measure_dict = {
         "radfODF": 'Radial_fODF', "fa": 'FA', "md": 'MD', "rd": 'RD',
@@ -51,7 +50,6 @@ measure_dict = {
         "length": 'Length', 'lesion': "Lesion",
         'lesion_total': 'Lesion_total'
                 }
-
 
 list_metrics = [
     ['NuFO', 'nufo', 'AFD_total', 'afd_total', 'AFD_fixel', 'afd_along',
@@ -127,7 +125,6 @@ replace_bundles_dict = {
         "SLF_2_L": "", "SLF_2_R_": "", "SLF_2_R": "", "SLF_3_L_": "",
         "SLF_3_L": "", "SLF_3_R_": "", "SLF_3_R": "", "UF_L_": "",
         "UF_L": "", "UF_R_": "", "UF_R": ""}
-
 
 measure_by_method_dict_v1 = {
         'DTI': ['FA', 'RD', 'MD', 'AD', 'fa', 'rd', 'md', 'ad'],
