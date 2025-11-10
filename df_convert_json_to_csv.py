@@ -85,6 +85,8 @@ def main():
         df = pd.json_normalize(json.load(open(curr_json))).T
         df = df.reset_index(drop=False)
 
+        print(df)
+
         if 'lesion' in curr_json:
             long_columns_list = column_dict_name[key_columns][0]
             long_columns_nolist = column_dict_name[key_columns + '_nolist'][0]
@@ -98,6 +100,7 @@ def main():
             long_columns, wide_columns = column_dict_name[key_columns]
             # Store json data in dataframe
             values = [split_col(x) for x in df[["index", 0]].values]
+            print(long_columns, wide_columns)
             long_df = pd.DataFrame(columns=long_columns, data=values)
 
         if args.save_merge_df:
@@ -112,7 +115,7 @@ def main():
                            index=False)
         # Reshape long to wide dataframe
         if args.wide:
-            if 'sats' in long_df.column.tolist():
+            if 'sats' in long_df.columns.tolist():
                 long_df = reshape_to_wide_format(long_df, wide_columns)
                 # Save dataframe
             long_df.to_csv(os.path.join(args.out_dir,

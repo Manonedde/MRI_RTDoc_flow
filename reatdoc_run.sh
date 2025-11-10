@@ -11,22 +11,22 @@ source='/home/local/USHERBROOKE/eddm3601/Research/Sources/Github/MRI_RTDoc_flow'
 echo -e "Merged tractometryflow jsons output"
 mkdir $output_path/merged_jsons/
 
-scil_merge_json.py $tractometryflow_path/*/Bundle_Mean_Std/*json  \
+scil_json_merge_entries.py $tractometryflow_path/*/Bundle_Mean_Std/*json  \
                             $output_path/merged_jsons/mean_std.json
 
-scil_merge_json.py $tractometryflow_path/*/Bundle_Mean_Std_Per_Point/*json \
+scil_json_merge_entries.py $tractometryflow_path/*/Bundle_Mean_Std_Per_Point/*json \
                             $output_path/merged_jsons/mean_std_per_point.json
 
-scil_merge_json.py $tractometryflow_path/*/Bundle_Streamline_Count/*json  \
+scil_json_merge_entries.py $tractometryflow_path/*/Bundle_Streamline_Count/*json  \
                             $output_path/merged_jsons/streamline_count.json
 
-scil_merge_json.py $tractometryflow_path/*/Bundle_Length_Stats/*json  \
+scil_json_merge_entries.py $tractometryflow_path/*/Bundle_Length_Stats/*json  \
                             $output_path/merged_jsons/length_stats.json
 
-scil_merge_json.py $tractometryflow_path/*/Bundle_Volume/*json  \
+scil_json_merge_entries.py $tractometryflow_path/*/Bundle_Volume/*json  \
                             $output_path/merged_jsons/volume.json
 
-scil_merge_json.py $tractometryflow_path/*/Bundle_Volume/*json  \
+scil_json_merge_entries.py $tractometryflow_path/*/Bundle_Volume/*json  \
                             $output_path/merged_jsons/volume_per_label.json
 
 
