@@ -11,11 +11,10 @@ import os
 import pandas as pd
 import numpy as np
 
-from scilpy.io.utils import add_overwrite_arg, assert_inputs_exist
 from dataframe.parameters import (list_metrics, list_method, scaling_metrics,
                             measure_dict, replace_dict, columns_rename,
                             col_order)
-from dataframe.func import (filter_df, extract_average_and_profile,
+from dataframe.func import (apply_factor_to_metric, filter_df, extract_average_and_profile,
                             compute_ecvf_from_df, merged_left_right_data)
 
 
@@ -69,8 +68,6 @@ def _build_arg_parser():
                                 'for MRI measurements and sum() for '
                                 'volume and count. ')
 
-    add_overwrite_arg(p)
-
     return p
 
 
@@ -78,7 +75,6 @@ def main():
     parser = _build_arg_parser()
     args = parser.parse_args()
 
-    assert_inputs_exist(parser, args.in_csv)
 
     if args.out_dir is None:
         args.out_dir = './'
@@ -154,8 +150,10 @@ def main():
     # Apply a scale factor for diffusion measure
     if args.apply_factor:
         if args.apply_factor_metric is not None:
-            scaling_metrics = args.apply_factor_metric
-            for curr_metric in scaling_metrics:
+            rescaling_metrics = args.apply_factor_metric
+        else:
+            rescaling_metrics = scaling_metrics
+            for curr_metric in rescaling_metrics:
                 apply_factor_to_metric(df, curr_metric, args.apply_factor)
 
     # Compute ECVF values from ICVF in dataframe
@@ -189,11 +187,11 @@ def main():
             average_by_method = filter_df(average, 'Method', curr_method)
             average_by_method.to_csv(os.path.join(args.out_dir, args.out_name +
                                                   'average_' + curr_method +
-                                                   '.csv'), index=False)
+                                                  '.csv'), index=False)
             profile_by_method = filter_df(profile, 'Method', curr_method)
             profile_by_method.to_csv(os.path.join(args.out_dir, args.out_name +
                                                   'profile_' + curr_method +
-                                                   '.csv'), index=False)
+                                                  '.csv'), index=False)
     else:
         average.to_csv(os.path.join(args.out_dir,
                                     args.out_name + '_average.csv'),

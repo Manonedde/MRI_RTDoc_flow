@@ -82,7 +82,6 @@ list_method = ['FODF',
                'Streamlines',
                'Lesion']
 
-
 scaling_metrics = ['AD', 'RD', 'MD', 'ad', 'rd', 'md', 'mdt', 'rdt', 'adt',
                    'MD-FWcorrected', 'RD-FWcorrected', 'AD-FWcorrected']
 
